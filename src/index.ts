@@ -149,7 +149,7 @@ async function createProject(options: CliOptions) {
 program
   .name('create-ao-app')
   .description('CLI tool to create AO-powered applications')
-  .version('1.0.0');
+  .version('1.0.1');
 
 program
   .argument('[name]', 'name of your project')

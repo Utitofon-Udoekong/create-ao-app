@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import inquirer from 'inquirer';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs-extra';
 import path from 'path';
 import ora from 'ora';
 import chalk from 'chalk';
+import inquirer, {DistinctQuestion} from 'inquirer';
 
 const execAsync = promisify(exec);
 
@@ -20,6 +20,7 @@ interface CliOptions {
   framework?: string;
   name?: string;
   path?: string;
+  packageManager?: string;
 }
 
 async function validateDirectory(directoryPath: string): Promise<boolean> {
@@ -57,10 +58,12 @@ async function initializeGit(targetPath: string): Promise<void> {
   }
 }
 
-async function installDependencies(targetPath: string): Promise<void> {
-  const spinner = ora('Installing dependencies...').start();
+async function installDependencies(targetPath: string, packageManager: string): Promise<void> {
+  const spinner = ora(`Installing dependencies with ${packageManager}...`).start();
   try {
-    await execAsync('pnpm install', { cwd: targetPath });
+    const command = `${packageManager} install`;
+
+    await execAsync(command, { cwd: targetPath });
     spinner.succeed('Dependencies installed');
   } catch (error) {
     spinner.fail('Failed to install dependencies');
@@ -69,7 +72,7 @@ async function installDependencies(targetPath: string): Promise<void> {
 }
 
 async function promptForMissingOptions(options: CliOptions): Promise<CliOptions> {
-  const questions = [];
+  const questions: DistinctQuestion[] = [];
 
   if (!options.framework) {
     questions.push({
@@ -91,6 +94,16 @@ async function promptForMissingOptions(options: CliOptions): Promise<CliOptions>
       default: 'ao-project'
     });
   }
+
+  if (!options.packageManager) {
+    questions.push({
+      type: 'list',
+      name: 'packageManager',
+      message: 'Which package manager would you like to use?',
+      choices: ['pnpm', 'yarn', 'npm']
+    });
+  }
+
 
   const answers = await inquirer.prompt(questions);
   return {
@@ -119,12 +132,13 @@ async function createProject(options: CliOptions) {
     await initializeGit(targetPath);
 
     // Install dependencies
-    await installDependencies(targetPath);
+    const packageManager = options.packageManager || 'npm';
+    await installDependencies(targetPath, packageManager);
 
     console.log(chalk.green('\n🎉 Project created successfully!'));
     console.log(chalk.blue('\nNext steps:'));
     console.log(chalk.white(`  cd ${path.relative(process.cwd(), targetPath)}`));
-    console.log(chalk.white('  pnpm dev\n'));
+    console.log(chalk.white(`  ${packageManager} run dev\n`));
 
   } catch (error) {
     console.error(chalk.red('Error creating project:'), error);
@@ -141,6 +155,7 @@ program
   .argument('[name]', 'name of your project')
   .option('-f, --framework <framework>', 'framework to use (nextjs or nuxtjs)')
   .option('-p, --path <path>', 'path to create the project in')
+  .option('-pm,--package-manager <packageManager>', 'package manager to use (pnpm, yarn, npm)')
   .action(async (name, options) => {
     const projectOptions = await promptForMissingOptions({
       ...options,

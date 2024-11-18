@@ -36,6 +36,12 @@ create-ao-app my-app --framework nextjs
 # Use in existing directory
 create-ao-app --path ./existing-directory
 
+# Specify package manager
+create-ao-app --package-manager yarn
+
+# Using npx
+npx create-ao-app my-app --framework nextjs --package-manager yarn
+
 # Interactive mode (default)
 create-ao-app
 ```

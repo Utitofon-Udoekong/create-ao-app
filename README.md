@@ -55,6 +55,7 @@ create-ao-app
 | `--path <path>` | `-p` | Create project in specific directory |
 | `--help` | `-h` | Display help information |
 | `--version` | `-V` | Display version number |
+| `--package-manager <packageManager>` | `-pm` | package manager to use (pnpm, yarn, npm) |
 
 ## Project Structure
 

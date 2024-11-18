@@ -1,4 +1,5 @@
-# create-ao-app
+# create-ao-app 
+![NPM License](https://img.shields.io/npm/l/create-ao-app)
 
 A CLI tool for quickly scaffolding AO-powered applications with Next.js or Nuxt.js.
 

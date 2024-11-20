@@ -1,6 +1,6 @@
 {
   "name": "create-ao-app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI tool to create AO-powered applications",
   "type": "module",
   "bin": {
@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "test": "jest"
   },
   "keywords": [
     "ao",
@@ -25,12 +26,17 @@
     "commander": "^12.1.0",
     "fs-extra": "^11.2.0",
     "inquirer": "^12.1.0",
+    "js-yaml": "^4.1.0",
     "ora": "^8.1.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
+    "@types/jest": "^29.5.14",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.9.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },
   "engines": {

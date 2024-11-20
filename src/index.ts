@@ -1,167 +1,119 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs-extra';
-import path from 'path';
-import ora from 'ora';
-import chalk from 'chalk';
-import inquirer, {DistinctQuestion} from 'inquirer';
+import { AOSProcessManager } from './process-manager';
+import { loadConfig, saveConfig } from './config';
+import { createProject } from './project';
+import { Schedule } from './scheduler';
 
-const execAsync = promisify(exec);
-
-const TEMPLATES = {
-  nextjs: 'https://github.com/Utitofon-Udoekong/next-ao-starter-kit.git',
-  nuxtjs: 'https://github.com/Utitofon-Udoekong/nuxt-ao-starter-kit.git'
-};
-
-interface CliOptions {
-  framework?: string;
-  name?: string;
-  path?: string;
-  packageManager?: string;
-}
-
-async function validateDirectory(directoryPath: string): Promise<boolean> {
-  try {
-    const stats = await fs.stat(directoryPath);
-    const isEmpty = (await fs.readdir(directoryPath)).length === 0;
-    return stats.isDirectory() && isEmpty;
-  } catch (error) {
-    return false;
-  }
-}
-
-async function cloneTemplate(template: string, targetPath: string): Promise<void> {
-  const spinner = ora('Cloning template...').start();
-  try {
-    await execAsync(`git clone ${template} ${targetPath}`);
-    await fs.remove(path.join(targetPath, '.git')); // Remove .git directory
-    spinner.succeed('Template cloned successfully');
-  } catch (error) {
-    spinner.fail('Failed to clone template');
-    throw error;
-  }
-}
-
-async function initializeGit(targetPath: string): Promise<void> {
-  const spinner = ora('Initializing git repository...').start();
-  try {
-    await execAsync('git init', { cwd: targetPath });
-    await execAsync('git add .', { cwd: targetPath });
-    await execAsync('git commit -m "Initial commit from AO CLI"', { cwd: targetPath });
-    spinner.succeed('Git repository initialized');
-  } catch (error) {
-    spinner.fail('Failed to initialize git repository');
-    throw error;
-  }
-}
-
-async function installDependencies(targetPath: string, packageManager: string): Promise<void> {
-  const spinner = ora(`Installing dependencies with ${packageManager}...`).start();
-  try {
-    const command = `${packageManager} install`;
-
-    await execAsync(command, { cwd: targetPath });
-    spinner.succeed('Dependencies installed');
-  } catch (error) {
-    spinner.fail('Failed to install dependencies');
-    throw error;
-  }
-}
-
-async function promptForMissingOptions(options: CliOptions): Promise<CliOptions> {
-  const questions: DistinctQuestion[] = [];
-
-  if (!options.framework) {
-    questions.push({
-      type: 'list',
-      name: 'framework',
-      message: 'Which framework would you like to use?',
-      choices: [
-        { name: 'Next.js', value: 'nextjs' },
-        { name: 'Nuxt.js', value: 'nuxtjs' }
-      ]
-    });
-  }
-
-  if (!options.name && !options.path) {
-    questions.push({
-      type: 'input',
-      name: 'name',
-      message: 'What is the name of your project?',
-      default: 'ao-project'
-    });
-  }
-
-  if (!options.packageManager) {
-    questions.push({
-      type: 'list',
-      name: 'packageManager',
-      message: 'Which package manager would you like to use?',
-      choices: ['pnpm', 'yarn', 'npm']
-    });
-  }
-
-
-  const answers = await inquirer.prompt(questions);
-  return {
-    ...options,
-    ...answers
-  };
-}
-
-async function createProject(options: CliOptions) {
-  try {
-    // Determine target directory
-    let targetPath = options.path || options.name || 'ao-project';
-    targetPath = path.resolve(process.cwd(), targetPath);
-
-    // Check if directory exists and is empty
-    const exists = await validateDirectory(targetPath);
-    if (!exists) {
-      await fs.ensureDir(targetPath);
-    }
-
-    // Clone the appropriate template
-    const templateUrl = TEMPLATES[options.framework as keyof typeof TEMPLATES];
-    await cloneTemplate(templateUrl, targetPath);
-
-    // Initialize new git repository
-    await initializeGit(targetPath);
-
-    // Install dependencies
-    const packageManager = options.packageManager || 'npm';
-    await installDependencies(targetPath, packageManager);
-
-    console.log(chalk.green('\n🎉 Project created successfully!'));
-    console.log(chalk.blue('\nNext steps:'));
-    console.log(chalk.white(`  cd ${path.relative(process.cwd(), targetPath)}`));
-    console.log(chalk.white(`  ${packageManager} run dev\n`));
-
-  } catch (error) {
-    console.error(chalk.red('Error creating project:'), error);
-    process.exit(1);
-  }
-}
-
+// Enhanced CLI commands
 program
   .name('create-ao-app')
-  .description('CLI tool to create AO-powered applications')
-  .version('1.0.1');
+  .description('CLI tool to create and manage AO-powered applications')
+  .version('1.0.2');
 
+// Project creation command
 program
-  .argument('[name]', 'name of your project')
+  .command('new [name]')
+  .alias('create')
+  .description('Create a new AO project')
   .option('-f, --framework <framework>', 'framework to use (nextjs or nuxtjs)')
   .option('-p, --path <path>', 'path to create the project in')
-  .option('-pm,--package-manager <packageManager>', 'package manager to use (pnpm, yarn, npm)')
-  .action(async (name, options) => {
-    const projectOptions = await promptForMissingOptions({
-      ...options,
-      name
+  .option('--no-aos-process', 'skip automatic AO process creation')
+  .option('--package-manager <pm>', 'package manager to use (npm, yarn, pnpm)')
+  .option('--config <path>', 'path to configuration file')
+  .option('-m, --monitor', 'monitor AO processes after starting')
+  .option('-e, --eval <input>', 'evaluate process after starting')
+  .action(createProject);
+
+// Process management commands
+program
+  .command('processes')
+  .description('List all AO processes')
+  .action(async () => {
+    const processes = await AOSProcessManager.listProcesses(process.cwd());
+    console.log(processes);
+  });
+
+// Enhanced monitor command with pattern matching
+program
+  .command('monitor <process>')
+  .description('Monitor an AO process')
+  .option('-p, --pattern <pattern>', 'message pattern to match')
+  .option('--json', 'output in JSON format')
+  .action(async (process, options) => {
+    await AOSProcessManager.monitorProcess(process, process.cwd(), {
+      pattern: options.pattern,
+      json: options.json
     });
-    await createProject(projectOptions);
+  });
+
+// Enhanced eval command
+program
+  .command('eval <process> <input>')
+  .description('Evaluate an AO process')
+  .option('--await', 'wait for response')
+  .option('--timeout <ms>', 'timeout in milliseconds', '5000')
+  .action(async (process, input, options) => {
+    await AOSProcessManager.evaluateProcess(process, input, process.cwd(), {
+      await: options.await,
+      timeout: parseInt(options.timeout)
+    });
+  });
+
+// Scheduler commands
+program
+  .command('schedule <process>')
+  .description('Start process scheduler')
+  .option('-i, --interval <ms>', 'scheduler interval', '1000')
+  .option('-t, --tick <function>', 'tick function name')
+  .action(async (process, options) => {
+    const scheduler = new Schedule(process, {
+      interval: parseInt(options.interval),
+      tick: options.tick
+    });
+    await scheduler.start();
+  });
+
+program
+  .command('schedule-stop <process>')
+  .description('Stop process scheduler')
+  .action(async (process) => {
+    const scheduler = new Schedule(process);
+    await scheduler.stop();
+  });
+
+// Pattern watching command
+program
+  .command('watch <process> <pattern>')
+  .description('Watch for specific message patterns')
+  .option('--timeout <ms>', 'watch timeout', '0')
+  .option('--count <n>', 'number of messages to watch', '0')
+  .action(async (process, pattern, options) => {
+    await AOSProcessManager.watchPattern(process, pattern, {
+      timeout: parseInt(options.timeout),
+      count: parseInt(options.count)
+    });
+  });
+
+// Configuration commands
+program
+  .command('config')
+  .description('Manage configuration')
+  .option('--get <key>', 'get configuration value')
+  .option('--set <key> <value>', 'set configuration value')
+  .option('--delete <key>', 'delete configuration value')
+  .action(async (options) => {
+    const config = await loadConfig(process.cwd(), {});
+    if (options.get) {
+      console.log(config[options.get as keyof typeof config]);
+    } else if (options.set) {
+      config[options.set] = options.value;
+      await saveConfig(process.cwd(), config);
+    } else if (options.delete) {
+      delete config[options.delete as keyof typeof config];
+      await saveConfig(process.cwd(), config);
+    }
   });
 
 program.parse();

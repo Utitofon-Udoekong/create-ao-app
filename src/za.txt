@@ -1,0 +1,16 @@
+taxease/
+components/
+    TransactionImport.vue
+    TransactionList.vue
+    TaxReport.vue
+    CategoryManager.vue
+pages/
+    index.vue
+    transactions.vue
+    reports.vue
+    settings.vue
+utils/
+    requestNetwork.ts
+    taxCalculations.ts
+types/
+     index.ts

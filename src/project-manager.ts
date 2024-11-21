@@ -2,15 +2,17 @@ import inquirer, { DistinctQuestion } from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
 import ora from 'ora';
-import { CliOptions } from './types';
-import { execAsync } from './utils';
+import { AOConfig, CliOptions, CreateProjectOptions } from './types.js';
+import { detectPackageManager, execAsync } from './utils.js';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { DEFAULT_CONFIG } from './config.js';
 
 export class ProjectManager {
     async cloneTemplate(template: string, targetPath: string): Promise<void> {
         const spinner = ora('Cloning template...').start();
         try {
             await execAsync(`git clone ${template} ${targetPath}`);
-            await fs.remove(path.join(targetPath, '.git')); // Remove .git directory
+            await fs.remove(path.join(targetPath, '.git')); 
             spinner.succeed('Template cloned successfully');
         } catch (error) {
             spinner.fail('Failed to clone template');
@@ -58,44 +60,17 @@ export class ProjectManager {
     async promptForMissingOptions(options: CliOptions): Promise<CliOptions> {
         const questions: DistinctQuestion[] = [];
 
-        if (!options.framework) {
-            questions.push({
-                type: 'list',
-                name: 'framework',
-                message: 'Which framework would you like to use?',
-                choices: [
-                    { name: 'Next.js', value: 'nextjs' },
-                    { name: 'Nuxt.js', value: 'nuxtjs' }
-                ]
-            });
-        }
-
-        if (!options.name && !options.path) {
-            questions.push({
-                type: 'input',
-                name: 'name',
-                message: 'What is the name of your project?',
-                default: 'ao-project'
-            });
-        }
-
-        if (!options.packageManager) {
-            questions.push({
-                type: 'list',
-                name: 'packageManager',
-                message: 'Which package manager would you like to use?',
-                choices: ['pnpm', 'yarn', 'npm']
-            });
-        }
+        questions.push(
+            {
+                type: 'confirm',
+                name: 'aosProcess',
+                message: 'Would you like to set a name for your AO process?',
+                default: false
+            },
+        );
 
         if (!options.aosProcess) {
             questions.push(
-                {
-                    type: 'confirm',
-                    name: 'aosProcess',
-                    message: 'Would you like to automatically start an AO process?',
-                    default: true
-                },
                 {
                     type: 'input',
                     name: 'processName',
@@ -109,6 +84,53 @@ export class ProjectManager {
         return {
             ...options,
             ...answers
+        };
+    }
+
+    async startDevServer(targetPath: string, config: AOConfig): Promise<ChildProcessWithoutNullStreams> {
+        const spinner = ora('Starting development server...').start();
+        try {
+          const pm = config.packageManager || await detectPackageManager();
+          const startCommand = {
+            'npm': 'npm run dev',
+            'yarn': 'yarn dev',
+            'pnpm': 'pnpm dev'
+          }[pm];
+      
+          if (!startCommand) {
+            throw new Error(`Unsupported package manager: ${pm}`);
+          }
+      
+          const devProcess = spawn(startCommand, {
+            cwd: targetPath,
+            shell: true,
+            stdio: 'pipe',
+            env: {
+              ...process.env,
+              ...config.env,
+              PORT: config.ports?.dev?.toString() || '3000'
+            }
+          });
+      
+          spinner.succeed(`Development server starting with ${pm}`);
+          return devProcess;
+        } catch (error) {
+          spinner.fail('Failed to start development server');
+          throw error;
+        }
+      }
+
+    async createDefaultAOConfig(options: CreateProjectOptions): Promise<AOConfig> {
+        return {
+            ...DEFAULT_CONFIG,
+            luaFiles: [], 
+            packageManager: options.packageManager || 'npm',
+            processName: options.processName || 'ao-process',
+            autoStart: true,
+            tags: {
+                'Environment': 'development',
+                'Project': options.name || 'ao-app'
+            }
         };
     }
 }

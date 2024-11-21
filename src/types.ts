@@ -1,4 +1,3 @@
-// src/types.ts
 export interface SchedulerConfig {
     interval: number;
     tick: string;
@@ -7,23 +6,23 @@ export interface SchedulerConfig {
     onError?: string;
   }
   
-  export interface LuaFileConfig {
-    processName: string;
+  export interface AOConfig {
+    luaFiles: string[];
+    packageManager: 'npm' | 'yarn' | 'pnpm';
+    env?: { [key: string]: string };
+    autoStart?: boolean;
     scheduler?: SchedulerConfig;
     evaluator?: string;
     messageHandler?: string;
-  }
-  
-  export interface Config {
-    luaFiles: {
-      [key: string]: LuaFileConfig;
-    };
-    packageManager: 'npm' | 'yarn' | 'pnpm';
-    autoStart?: boolean;
+    monitor?: boolean;
+    framework?: 'nextjs' | 'nuxtjs';
     ports?: {
       dev?: number;
       [key: string]: number | undefined;
     };
+    cronInterval?: string;
+    tags?: { [key: string]: string };
+    processName?: string;
   }
 
   export interface CliOptions {
@@ -38,11 +37,17 @@ export interface SchedulerConfig {
   export interface CreateProjectOptions {
     framework?: 'nextjs' | 'nuxtjs';
     path?: string;
-    aosProcess?: boolean;
     packageManager?: 'npm' | 'yarn' | 'pnpm';
-    config?: string;
-    monitor?: boolean;
-    eval?: string;
+    config?: AOConfig;
     name?: string;
+    processName?: string;
+    autoStart?: boolean;
+  }
+
+  export interface StartDevelopmentServerOptions {
+    skipAos?: boolean;
+    configPath?: string;
+    monitorProcess?: boolean;
+    evaluate?: string;
     processName?: string;
   }

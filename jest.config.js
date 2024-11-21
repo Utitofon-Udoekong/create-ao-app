@@ -1,8 +1,20 @@
-/** @type {import('ts-jest').JestConfigWithTsJest} **/
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 export default {
-  testEnvironment: "node",
-  transform: {
-    "^.+.tsx?$": ["ts-jest",{}],
+  preset: 'ts-jest/presets/default-esm',
+  testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
-  testMatch: ["**/*.test.ts"]
-};
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true
+      }
+    ]
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(ora|chalk|inquirer|commander)/)'
+  ]
+}; 

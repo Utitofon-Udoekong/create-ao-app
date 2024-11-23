@@ -50,3 +50,11 @@ export interface SchedulerConfig {
     evaluate?: string;
     processName?: string;
   }
+
+  export interface CodeGenerationOptions {
+    prompt: string;
+    type: 'contract' | 'module' | 'test';
+    output?: string;
+    provider?: 'openai' | 'anthropic';
+    model?: string;
+  }

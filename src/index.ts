@@ -9,6 +9,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { LuaCodeGenerator } from './ai/code-generator.js';
+import { APIKeyManager } from './ai/api-config.js';
 
 // Template repositories for different frameworks
 const TEMPLATES = {
@@ -400,5 +402,54 @@ program
   .option('-m, --monitor-process', 'monitor AO processes after starting')
   .option('-e, --evaluate <input>', 'evaluate process after starting')
   .action(startDevWithAO);
+
+program
+  .command('ao:generate')
+  .description('Generate Lua code using AI')
+  .requiredOption('-p, --prompt <text>', 'Description of the Lua code you want to generate')
+  .option('-t, --type <type>', 'Type of code', 'contract')
+  .option('-o, --output <path>', 'Output file path')
+  .option('--provider <provider>', 'AI provider to use (openai or anthropic)', 'openai')
+  .option('--model <model>', 'Specific AI model to use')
+  .action(async (options) => {
+    try {
+      const generator = new LuaCodeGenerator();
+      
+      // Generate the code
+      const code = await generator.generateCode({
+        prompt: options.prompt,
+        type: options.type,
+        provider: options.provider as 'openai' | 'anthropic',
+        model: options.model
+      });
+
+      // Display the generated code
+      console.log(chalk.blue('\nGenerated Code:'));
+      console.log(code);
+
+      // Save if output path is provided
+      if (options.output) {
+        const outputPath = path.resolve(process.cwd(), options.output);
+        await generator.saveCode(code, outputPath);
+      }
+
+    } catch (error) {
+      console.error(chalk.red('Error generating code:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('config:api')
+  .description('Configure AI provider API keys')
+  .action(async () => {
+    try {
+      const apiKeyManager = new APIKeyManager();
+      await apiKeyManager.promptForAPIKey();
+    } catch (error) {
+      console.error(chalk.red('Error configuring API key:'), error);
+      process.exit(1);
+    }
+  });
 
 program.parse();

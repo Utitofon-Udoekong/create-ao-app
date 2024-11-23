@@ -13,6 +13,7 @@ A CLI tool for quickly scaffolding AO-powered applications with Next.js or Nuxt.
 - ⚡️ Built with TypeScript
 - 🔧 AO Process Management
 - 🖥️ Development Server Integration
+- 🤖 AI-Powered Code Generation
 
 ## Installation
 
@@ -88,17 +89,37 @@ cao ao:schedule -i 5000 -t "tickFunction"
 cao ao:schedule-stop
 ```
 
-### Configuration Management
+### AI Code Generation
 
+Before using the AI code generation feature, you need to configure an API key. You have several options:
+
+1. Set environment variable:
 ```bash
-# Get config value
-cao config --get packageManager
+export OPENAI_API_KEY='your-api-key-here'
+export ANTHROPIC_API_KEY='your-anthropic-api-key-here'
+```
 
-# Set config value
-cao config --set packageManager pnpm
+2. Configure API key through CLI:
+```bash
+cao config:api
+```
 
-# Delete config value
-cao config --delete customKey
+3. The CLI will prompt for an API key if none is found when running generation commands.
+
+Generate code:
+```bash
+# Generate a Lua contract
+cao ao:generate -p "Create a simple counter contract" -t contract -o ./ao/counter.lua
+
+# Generate a test module
+cao ao:generate -p "Create tests for counter contract" -t test -o ./ao/tests/counter.test.lua
+
+# Generate without saving to file
+cao ao:generate -p "Create a token contract"
+
+# Specify AI provider and model
+cao ao:generate -p "Create a counter contract" --provider openai --model gpt-4
+cao ao:generate -p "Create a counter contract" --provider anthropic --model claude-3-opus-20240229
 ```
 
 ## Project Structure
@@ -208,9 +229,32 @@ For support, please [open an issue](https://github.com/Utitofon-Udoekong/create-
 
 ### Command Options
 
-| Command | Option | Description |
-|---------|--------|-------------|
-| `ao:start` | `-n, --process-name <name>` | Set custom name for AO process |
-| | `-m, --monitor-process` | Monitor process after starting |
-| | `-e, --evaluate <input>` | Evaluate process after starting |
-| | `--config-path <path>` | Custom config file path |
+| Command         | Option                          | Description                                      |
+|-----------------|---------------------------------|--------------------------------------------------|
+| `ao:start`      | `-n, --process-name <name>`    | Set custom name for AO process                  |
+|                 | `-m, --monitor-process`        | Monitor process after starting                   |
+|                 | `-e, --evaluate <input>`       | Evaluate process after starting                  |
+|                 | `--config-path <path>`         | Custom config file path                          |
+| `ao:monitor`    | `-p, --pattern [pattern]`      | Message pattern to match                         |
+|                 | `--json`                       | Output in JSON format                            |
+| `ao:eval`       | `<input>`                      | Input for evaluating the AO process              |
+|                 | `--await`                      | Wait for response                                |
+|                 | `--timeout <ms>`               | Timeout in milliseconds, default is 5000        |
+| `ao:schedule`   | `-i, --interval <ms>`          | Scheduler interval, default is 1000             |
+|                 | `-t, --tick <function>`        | Tick function name                               |
+| `ao:schedule-stop` |                               | Stop the process scheduler                       |
+| `config`        | `--get <key>`                  | Get configuration value                          |
+|                 | `--set <key> <value>`          | Set configuration value                          |
+|                 | `--delete <key>`               | Delete configuration value                       |
+| `dev`           | `--config-path <path>`         | Path to configuration file                       |
+| `dev:ao`        | `-m, --monitor-process`        | Monitor AO processes after starting              |
+|                 | `-e, --evaluate <input>`       | Evaluate process after starting                  |
+|                 | `--config-path <path>`         | Custom config file path                          |
+| `init`          | `-f, --framework <framework>`  | Framework to use (nextjs or nuxtjs)            |
+|                 | `-p, --path <path>`            | Path to create the project in                   |
+|                 | `--package-manager <pm>`       | Package manager to use (npm, yarn, pnpm)       |
+| `ao:generate`   | `-p, --prompt <text>`          | Description of the Lua code you want to generate |
+|                 | `-t, --type <type>`            | Type of code (contract/module/test)             |
+|                 | `-o, --output <path>`          | Output file path                                |
+|                 | `--provider <provider>`         | AI provider to use (openai or anthropic)       |
+|                 | `--model <model>`              | Specific AI model to use                        |

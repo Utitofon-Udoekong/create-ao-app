@@ -155,7 +155,7 @@ export class ProjectManager {
 
                 // Only show framework output if not running with AO process
                 if (!quietFramework) {
-                    process.stdout.write(data);
+                    process.stdout.write(output);
                 }
             });
 
@@ -167,7 +167,7 @@ export class ProjectManager {
                 }
                 // Only show error output if not in quiet mode
                 if (!quietFramework) {
-                    process.stderr.write(data);
+                    process.stderr.write(error);
                 }
             });
 

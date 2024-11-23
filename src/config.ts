@@ -6,8 +6,7 @@ import { AOConfig } from './types.js';
 const CONFIG_FILE_NAME = 'ao.config.yml';
 export const DEFAULT_CONFIG: AOConfig = {
   luaFiles: [],
-  packageManager: 'pnpm',
-  autoStart: true,
+  packageManager: 'npm',
   ports: {
     dev: 3000
   },

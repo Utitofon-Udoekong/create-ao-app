@@ -10,7 +10,6 @@ export interface SchedulerConfig {
     luaFiles: string[];
     packageManager: 'npm' | 'yarn' | 'pnpm';
     env?: { [key: string]: string };
-    autoStart?: boolean;
     scheduler?: SchedulerConfig;
     evaluator?: string;
     messageHandler?: string;
@@ -23,6 +22,7 @@ export interface SchedulerConfig {
     cronInterval?: string;
     tags?: { [key: string]: string };
     processName?: string;
+    runWithAO?: boolean;
   }
 
   export interface CliOptions {
@@ -41,7 +41,6 @@ export interface SchedulerConfig {
     config?: AOConfig;
     name?: string;
     processName?: string;
-    autoStart?: boolean;
   }
 
   export interface StartDevelopmentServerOptions {

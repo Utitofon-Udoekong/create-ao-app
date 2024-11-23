@@ -86,7 +86,7 @@ export class AOSProcessManager {
       if (!(await isCommandAvailable('aos'))) {
         spinner.fail('AOS is not installed');
         console.log(chalk.yellow('\nPlease install AOS first:'));
-        console.log(chalk.white('\n  npm install -g @permaweb/aos-cli'));
+        console.log(chalk.white('\n  npm i -g https://get_ao.g8way.io'));
         return false;
       }
       spinner.succeed('AOS is installed');

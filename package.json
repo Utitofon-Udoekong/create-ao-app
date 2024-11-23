@@ -11,13 +11,13 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "prepublishOnly": "pnpm build",
-    "prepare": "rm -rf dist && pnpm build",
+    "prepublishOnly": "npm run build",
+    "prepare": "rimraf dist && npm run build",
     "test": "jest",
-    "test:cli": "pnpm run build && node dist/index.js",
-    "link:global": "pnpm run prepare && chmod +x dist/index.js && npm link",
+    "test:cli": "npm run build && node dist/index.js",
+    "link:global": "npm run prepare && cross-env-shell \"[[ \\\"$OS\\\" != 'Windows_NT' ]] && chmod +x dist/index.js || exit 0\" && npm link",
     "unlink:global": "npm unlink -g create-ao-app",
-    "relink:global": "pnpm run unlink:global && pnpm run link:global"
+    "relink:global": "npm run unlink:global && npm run link:global"
   },
   "keywords": [
     "ao",
@@ -34,6 +34,7 @@
     "fs-extra": "^11.2.0",
     "inquirer": "^12.1.0",
     "js-yaml": "^4.1.0",
+    "open": "^10.0.0",
     "ora": "^8.1.1",
     "which": "^5.0.0"
   },
@@ -43,7 +44,9 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.9.0",
     "@types/which": "^3.0.4",
+    "cross-env": "^7.0.3",
     "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3"
   },

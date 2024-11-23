@@ -10,13 +10,14 @@ import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 
+// Template repositories for different frameworks
 const TEMPLATES = {
   nextjs: 'https://github.com/Utitofon-Udoekong/next-ao-starter-kit.git',
   nuxtjs: 'https://github.com/Utitofon-Udoekong/nuxt-ao-starter-kit.git'
 };
 
 const processManager = new AOSProcessManager();
-const projectManager = new ProjectManager();
+const projectManager = new ProjectManager(process.cwd());
 
 // Core functions
 async function createProject(name: string, options: CreateProjectOptions) {
@@ -94,7 +95,6 @@ async function createProject(name: string, options: CreateProjectOptions) {
     const defaultConfig: AOConfig = {
       luaFiles: [],
       packageManager,
-      autoStart: false,
       framework,
       ports: { dev: 3000 }
     };
@@ -121,8 +121,25 @@ async function startDevServer() {
     const projectPath = process.cwd();
     const config = await loadConfig(projectPath);
 
-    await projectManager.startDevServer(projectPath, config);
-    console.log(chalk.green('\n🎉 Development server started successfully!'));
+    // Only prompt for AO process preference on first run
+    if (config.runWithAO === undefined) {
+      const { startAO } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'startAO',
+        message: 'Would you like to always start an AO process with the dev server? (This preference will be saved)\n. This can be changed later in the ao config file.',
+        default: false
+      }]);
+
+      config.runWithAO = startAO;
+      await saveConfig(projectPath, config);
+    }
+
+    // Start server based on saved preference
+    if (config.runWithAO) {
+      await startDevWithAO({ monitorProcess: false });
+    } else {
+      await projectManager.startDevServer(config, false);
+    }
   } catch (error) {
     console.error('Error starting development server:', error);
     throw error;
@@ -146,7 +163,7 @@ async function startAOProcess(options: StartDevelopmentServerOptions) {
         message: 'Enter a name for your AO process (optional):',
         default: 'ao-process'
       }]);
-      
+
       if (processName) {
         config.processName = processName;
         await saveConfig(projectPath, config);
@@ -207,43 +224,30 @@ async function startDevWithAO(options: StartDevelopmentServerOptions) {
     const projectPath = process.cwd();
     const config = await loadConfig(projectPath);
 
-    // Start development server first
-    console.log(chalk.blue('\nStarting development server...'));
-    
-    // Create a promise that resolves when the server is ready
-    const serverReady = new Promise<void>(async(resolve, reject) => {
-      const devServer = await projectManager.startDevServer(projectPath, config);
-      
+    // Start dev server and wait for it to be ready before starting AO process
+    const serverReady = () => new Promise<boolean>(async (resolve, reject) => {
+      const devServer = await projectManager.startDevServer(config, true);
+
       devServer.stdout?.on('data', (data: Buffer) => {
         const output = data.toString();
-        // Check for Next.js or Nuxt ready message
-        if (
-          output.includes('ready in') || 
-          output.includes('Listening') || 
-          output.includes('Local:')   
-        ) {
-          resolve();
+        if (output.includes('http://localhost:')) {
+          resolve(true);
         }
       });
 
-      devServer.stderr?.on('data', (data: Buffer) => {
-        console.error(data.toString());
-      });
-
-      devServer.on('error', (error) => {
-        reject(error);
-      });
-
-      // Add a timeout just in case
+      // Prevent hanging if server fails to start
       setTimeout(() => {
         reject(new Error('Development server startup timed out after 2 minutes'));
-      }, 10000); 
+      }, 120000);
     });
 
-    // Wait for server to be ready
+    // Start and wait for dev server
     console.log(chalk.yellow('\nWaiting for development server to be ready...'));
-    await serverReady;
-    console.log(chalk.green('🚀 Development server started successfully!'));
+    const isServerReady = await serverReady();
+    if (!isServerReady) {
+      console.log(chalk.red('🚫 Development server failed to start!'));
+      return;
+    }
 
     // Then handle AO processes
     if (await processManager.checkAOSInstallation() === false) {
@@ -262,7 +266,7 @@ async function startDevWithAO(options: StartDevelopmentServerOptions) {
     }
 
     console.log('\n'.repeat(2));
-    
+
     const { selectedFiles } = await inquirer.prompt([{
       type: 'checkbox',
       name: 'selectedFiles',
@@ -304,7 +308,7 @@ async function startDevWithAO(options: StartDevelopmentServerOptions) {
 program
   .name('create-ao-app')
   .description('CLI tool to create and manage AO-powered applications')
-  .version('1.0.3');
+  .version('1.0.3-tc-4');
 
 program
   .command('init [name]')

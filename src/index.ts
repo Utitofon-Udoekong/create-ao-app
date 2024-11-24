@@ -310,7 +310,7 @@ async function startDevWithAO(options: StartDevelopmentServerOptions) {
 program
   .name('create-ao-app')
   .description('CLI tool to create and manage AO-powered applications')
-  .version('1.0.3-tc-4');
+  .version('1.0.3-tc-5');
 
 program
   .command('init [name]')

@@ -119,7 +119,7 @@ cao ao:generate -p "Create a token contract"
 
 # Specify AI provider and model
 cao ao:generate -p "Create a counter contract" --provider openai --model gpt-4
-cao ao:generate -p "Create a counter contract" --provider anthropic --model claude-3-opus-20240229
+cao ao:generate -p "Create a counter contract" --provider anthropic --model claude-3-5-sonnet-latest
 ```
 
 ## Project Structure

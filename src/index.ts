@@ -112,6 +112,11 @@ async function createProject(name: string, options: CreateProjectOptions) {
     console.log(chalk.white('  cao ao:eval <input>   # Evaluate AO process'));
     console.log(chalk.white('  cao ao:schedule    # Start process scheduler'));
     console.log(chalk.white('  cao ao:schedule-stop   # Stop process scheduler'));
+    console.log(chalk.white('  cao ao:generate    # Generate Lua code using AI'));
+    console.log(chalk.white('  cao config:api     # Configure AI provider API keys'));
+    console.log(chalk.white('  cao config     # Manage configuration'));
+    console.log(chalk.white('  cao help       # Show help'));
+    console.log(chalk.white('  cao version    # Show version'));
   } catch (error) {
     console.error('Error creating project:', error);
     throw error;

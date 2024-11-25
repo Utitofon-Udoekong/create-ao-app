@@ -22,6 +22,6 @@ export async function detectPackageManager(): Promise<string> {
       return pm;
     }
   }
-  return 'npm'; // Fallback to npm
+  return 'npm';
 }
 

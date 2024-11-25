@@ -25,7 +25,7 @@ npm install -g create-ao-app
 pnpm add -g create-ao-app
 
 # Or use directly with npx
-npx create-ao-app my-app
+npx create-ao-app init my-app
 ```
 
 ## Usage

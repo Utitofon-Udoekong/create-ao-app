@@ -4,7 +4,7 @@ import { program } from 'commander';
 import { loadConfig, saveConfig } from './config.js';
 import { AOSProcessManager, Schedule } from './process-manager.js';
 import { ProjectManager } from './project-manager.js';
-import { AOConfig, CreateProjectOptions, StartDevelopmentServerOptions } from './types.js';
+import { AOConfig, AOProcessOptions, CreateProjectOptions, StartDevelopmentServerOptions } from './types.js';
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
@@ -154,7 +154,7 @@ async function startDevServer() {
   }
 }
 
-async function startAOProcess(options: StartDevelopmentServerOptions) {
+async function startAOProcess(options: AOProcessOptions) {
   try {
     const projectPath = process.cwd();
     const config = await loadConfig(projectPath);
@@ -164,7 +164,7 @@ async function startAOProcess(options: StartDevelopmentServerOptions) {
     }
 
     // Prompt for process name if not provided
-    if (!options.processName && !config.processName) {
+    if (!options.name && !config.processName) {
       const { processName } = await inquirer.prompt([{
         type: 'input',
         name: 'processName',
@@ -176,8 +176,8 @@ async function startAOProcess(options: StartDevelopmentServerOptions) {
         config.processName = processName;
         await saveConfig(projectPath, config);
       }
-    } else if (options.processName) {
-      config.processName = options.processName;
+    } else if (options.name) {
+      config.processName = options.name;
       await saveConfig(projectPath, config);
     }
 
@@ -207,14 +207,10 @@ async function startAOProcess(options: StartDevelopmentServerOptions) {
     config.luaFiles = selectedFiles;
     await saveConfig(projectPath, config);
 
-    await processManager.startAOProcess(processPath, config);
+    await processManager.startAOProcess(processPath, config, options);
 
-    if (options.monitorProcess) {
+    if (options.monitor) {
       await processManager.monitorProcess();
-    }
-
-    if (options.evaluate) {
-      await processManager.evaluateProcess(options.evaluate);
     }
 
     console.log(chalk.green('\n🎉 AO processes started successfully!'));
@@ -316,7 +312,7 @@ async function startDevWithAO(options: StartDevelopmentServerOptions) {
 program
   .name('create-ao-app')
   .description('CLI tool to create and manage AO-powered applications')
-  .version('1.0.4');
+  .version('1.0.5');
 
 program
   .command('init [name]')
@@ -336,28 +332,70 @@ program
 program
   .command('ao:start')
   .description('Start AO processes')
-  .option('--config-path <path>', 'path to configuration file')
-  .option('-m, --monitor-process', 'monitor AO processes after starting')
-  .option('-e, --evaluate <input>', 'evaluate process after starting')
-  .option('-n, --process-name <name>', 'name for the AO process')
+  .option('-n, --name <name>', 'name for the AO process')
+  .option('-w, --wallet <path>', 'path to wallet file')
+  .option('-d, --data <path>', 'data file path')
+  .option('--tag-name <name>', 'process tag name')
+  .option('--tag-value <value>', 'process tag value')
+  .option('--module <txid>', 'module ID to use')
+  .option('--cron <frequency>', 'setup cron job (e.g., "1-minute")')
+  .option('--monitor', 'monitor the process')
+  .option('--sqlite', 'use sqlite3 AOS Module')
+  .option('--gateway-url <url>', 'set Arweave gateway URL')
+  .option('--cu-url <url>', 'set Computer Unit URL')
+  .option('--mu-url <url>', 'set Messenger Unit URL')
   .action(startAOProcess);
 
 program
   .command('ao:monitor')
-  .description('Monitor an AO process')
-  .option('-p, --pattern [pattern]', 'message pattern to match')
-  .option('--json', 'output in JSON format')
-  .action(async (options) => {
-    await processManager.monitorProcess(options);
+  .description('Monitor AO processes')
+  .argument('[name]', 'process name to monitor')
+  .action(async (name) => {
+    try {
+      await processManager.monitorProcess(name);
+    } catch (error) {
+      console.error(chalk.red('Error monitoring process:'), error);
+      process.exit(1);
+    }
   });
 
 program
-  .command('ao:eval <input>')
-  .description('Evaluate an AO process')
-  .option('--await', 'wait for response')
-  .option('--timeout <ms>', 'timeout in milliseconds', '5000')
-  .action(async (input, options) => {
-    await processManager.evaluateProcess(input, options);
+  .command('ao:watch')
+  .description('Watch an AO process')
+  .argument('<name>', 'process name to watch')
+  .action(async (name) => {
+    try {
+      await processManager.watchProcess(name);
+    } catch (error) {
+      console.error(chalk.red('Error watching process:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('ao:list')
+  .description('List AO processes for your wallet')
+  .action(async () => {
+    try {
+      await processManager.listProcesses();
+    } catch (error) {
+      console.error(chalk.red('Error listing processes:'), error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('ao:cron')
+  .description('Setup a cron job for an AO process')
+  .argument('<name>', 'process name')
+  .argument('<frequency>', 'cron frequency (e.g., "1-minute", "30-second")')
+  .action(async (name, frequency) => {
+    try {
+      await processManager.setupCron(name, frequency);
+    } catch (error) {
+      console.error(chalk.red('Error setting up cron:'), error);
+      process.exit(1);
+    }
   });
 
 program
@@ -455,6 +493,18 @@ program
     } catch (error) {
       console.error(chalk.red('Error configuring API key:'), error);
       process.exit(1);
+    }
+  });
+
+program
+  .command('ao:stop')
+  .description('Stop running AO processes')
+  .action(async () => {
+    try {
+      await processManager.stopProcess();
+      console.log(chalk.green('AO process stopped successfully'));
+    } catch (error) {
+      console.error(chalk.red('Error stopping process:'), error);
     }
   });
 

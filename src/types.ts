@@ -58,3 +58,27 @@ export interface SchedulerConfig {
     provider?: 'openai' | 'anthropic';
     model?: string;
   }
+
+  export interface ProcessInfo {
+    pid: number;
+    name: string;
+    startTime: string;
+    configPath: string;
+  }
+  
+  export interface AOProcessOptions {
+    name?: string;
+    wallet?: string;
+    watch?: string;
+    load?: string[];
+    data?: string;
+    tagName?: string;
+    tagValue?: string;
+    module?: string;
+    cron?: string;
+    monitor?: boolean;
+    sqlite?: boolean;
+    gatewayUrl?: string;
+    cuUrl?: string;
+    muUrl?: string;
+  }

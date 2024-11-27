@@ -1,12 +1,13 @@
 // src/process-manager.ts
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
-import { AOConfig } from './types.js';
+import { AOConfig, AOProcessOptions, ProcessInfo } from './types.js';
 import chalk from 'chalk';
 import ora from 'ora';
 import { isCommandAvailable } from './utils.js';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
+import os from 'os';
 
 interface ScheduleOptions {
   interval?: number;
@@ -42,7 +43,7 @@ export class Schedule {
       try {
         await this.processManager.evaluateProcess(
           this.options.tick,
-          { await: true, timeout: this.options.interval }
+          { await: true, timeout: this.options.interval.toString() }
         );
         this.retryCount = 0;
       } catch (error) {
@@ -77,8 +78,28 @@ export class Schedule {
 }
 
 export class AOSProcessManager {
+  private processFilePath: string;
   private process: ChildProcess | null = null;
   private processName: string | null = null;
+
+  constructor() {
+    this.processFilePath = path.join(os.homedir(), '.ao-processes.json');
+  }
+
+  private async saveProcessInfo(info: ProcessInfo): Promise<void> {
+    await fs.writeJSON(this.processFilePath, info);
+  }
+
+  private async getProcessInfo(): Promise<ProcessInfo | null> {
+    try {
+      if (await fs.pathExists(this.processFilePath)) {
+        return await fs.readJSON(this.processFilePath);
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 
   async checkAOSInstallation(): Promise<boolean> {
     const spinner = ora('Checking AOS installation...').start();
@@ -141,109 +162,186 @@ export class AOSProcessManager {
     return selectedFiles;
   }
 
-  async startAOProcess(targetPath: string, config: AOConfig): Promise<ChildProcess> {
+  async startAOProcess(projectPath: string, config: AOConfig, options: AOProcessOptions = {}): Promise<ChildProcess> {
     const spinner = ora('Starting AO process...').start();
     try {
-      if (!config.luaFiles?.length) {
-        throw new Error('No Lua files configured to load');
+      const args: string[] = [];
+
+      // Process name (defaults to "default" if not specified)
+      if (options.name || config.processName) {
+        const processName = options.name || config.processName || 'default';
+        args.push(processName);
       }
 
-      this.processName = config.processName || 'ao-process';
-      const args = [this.processName];
-
-      // Add all Lua files to be loaded
-      for (const luaFile of config.luaFiles) {
-        args.push('--load', luaFile);
+      // Add wallet if specified
+      if (options.wallet) {
+        args.push('--wallet', options.wallet);
       }
 
-      if (config.cronInterval) {
-        args.push('--cron', config.cronInterval);
+      // Add Lua files to load
+      if (config.luaFiles && config.luaFiles.length > 0) {
+        for (const file of config.luaFiles) {
+          args.push('--load', file);
+        }
       }
 
-      if (config.tags) {
-        Object.entries(config.tags).forEach(([name, value]) => {
-          args.push('--tag-name', name, '--tag-value', value);
-        });
+      // Add other options
+      if (options.data) args.push('--data', options.data);
+      if (options.tagName && options.tagValue) {
+        args.push('--tag-name', options.tagName, '--tag-value', options.tagValue);
       }
+      if (options.module) args.push('--module', options.module);
+      if (options.cron) args.push('--cron', options.cron);
+      if (options.monitor) args.push('--monitor');
+      if (options.sqlite) args.push('--sqlite');
+      if (options.gatewayUrl) args.push('--gateway-url', options.gatewayUrl);
+      if (options.cuUrl) args.push('--cu-url', options.cuUrl);
+      if (options.muUrl) args.push('--mu-url', options.muUrl);
 
-      const aosProcess = spawn('aos', args, {
-        cwd: targetPath,
-        stdio: 'inherit'
+      console.log(chalk.blue('\nStarting AO process with command:'), 'aos', args.join(' '));
+
+      const process = spawn('aos', args, {
+        stdio: 'inherit',
+        cwd: projectPath
       });
 
-      this.process = aosProcess;
+      process.on('error', (error) => {
+        console.error('Error starting AO process:', error);
+        throw error;
+      });
+
+      this.process = process;
       spinner.succeed(`Started AO process: ${this.processName} with ${config.luaFiles.length} Lua file(s)`);
 
-      return aosProcess;
+      await this.saveProcessInfo({
+        pid: process.pid || 0,
+        name: config.processName || 'ao-process',
+        startTime: new Date().toISOString(),
+        configPath: projectPath
+      });
+
+      return process;
+
     } catch (error) {
-      spinner.fail('Failed to start AO process');
+      console.error('Error starting AO process:', error);
       throw error;
     }
   }
 
-  async evaluateProcess(
-    input: string,
-    options: { await?: boolean; timeout?: number } = {}
-  ): Promise<void> {
-    if (!this.process || !this.processName) {
-      throw new Error('No AO process is running');
-    }
+  async monitorProcess(processName?: string): Promise<void> {
+    try {
+      const args = processName ? [processName, '--monitor'] : ['--monitor'];
 
-    const args = ['eval', this.processName, input];
-    if (options.await) {
-      args.push('--await');
-      if (options.timeout) {
-        args.push('--timeout', options.timeout.toString());
+      console.log(chalk.blue('\nMonitoring AO process...'));
+      
+      const monitor = spawn('aos', args, {
+        stdio: 'inherit'
+      });
+
+      monitor.on('error', (error) => {
+        console.error('Error monitoring process:', error);
+        throw error;
+      });
+
+    } catch (error) {
+      console.error('Error monitoring AO process:', error);
+      throw error;
+    }
+  }
+
+  async watchProcess(processName: string): Promise<void> {
+    try {
+      const args = ['--watch=', processName];
+
+      console.log(chalk.blue(`\nWatching AO process: ${processName}`));
+      
+      const watch = spawn('aos', args, {
+        stdio: 'inherit'
+      });
+
+      watch.on('error', (error) => {
+        console.error('Error watching process:', error);
+        throw error;
+      });
+
+    } catch (error) {
+      console.error('Error watching AO process:', error);
+      throw error;
+    }
+  }
+
+  async listProcesses(): Promise<void> {
+    try {
+      const args = ['--list'];
+
+      console.log(chalk.blue('\nListing AO processes...'));
+      
+      const list = spawn('aos', args, {
+        stdio: 'inherit'
+      });
+
+      list.on('error', (error) => {
+        console.error('Error listing processes:', error);
+        throw error;
+      });
+
+    } catch (error) {
+      console.error('Error listing AO processes:', error);
+      throw error;
+    }
+  }
+
+  async setupCron(processName: string, frequency: string): Promise<void> {
+    try {
+      const args = [processName, '--cron', frequency];
+
+      console.log(chalk.blue(`\nSetting up cron for process ${processName} with frequency ${frequency}`));
+      
+      const cron = spawn('aos', args, {
+        stdio: 'inherit'
+      });
+
+      cron.on('error', (error) => {
+        console.error('Error setting up cron:', error);
+        throw error;
+      });
+
+    } catch (error) {
+      console.error('Error setting up cron for AO process:', error);
+      throw error;
+    }
+  }
+
+  async evaluateProcess(input: string, options?: { await?: boolean; timeout?: string }): Promise<void> {
+    try {
+      // AO process evaluation is done through the aos-cli eval command
+      const args = ['eval', input];
+      if (options?.await) args.push('--await');
+      if (options?.timeout) args.push('--timeout', options.timeout);
+
+      const evaluate = spawn('aos', args, {
+        stdio: 'inherit'
+      });
+
+      evaluate.on('error', (error) => {
+        console.error('Error evaluating process:', error);
+      });
+
+    } catch (error) {
+      console.error('Error evaluating AO process:', error);
+      throw error;
+    }
+  }
+
+  async stopProcess(): Promise<void> {
+    const processInfo = await this.getProcessInfo();
+    if (processInfo) {
+      try {
+        process.kill(processInfo.pid);
+        await fs.remove(this.processFilePath);
+      } catch (error) {
+        console.error('Error stopping process:', error);
       }
-    }
-
-    const process = spawn('aos', args, {
-      stdio: 'inherit',
-      shell: true
-    });
-
-    return new Promise((resolve, reject) => {
-      process.on('error', reject);
-      process.on('exit', (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`Eval exited with code ${code}`));
-      });
-    });
-  }
-
-  async monitorProcess(options: { pattern?: string; json?: boolean } = {}): Promise<void> {
-    if (!this.processName) {
-      throw new Error('No AO process is running');
-    }
-
-    const args = ['monitor', this.processName];
-    if (options.pattern) {
-      args.push('--pattern', options.pattern);
-    }
-    if (options.json) {
-      args.push('--json');
-    }
-
-    const process = spawn('aos', args, {
-      stdio: 'inherit',
-      shell: true
-    });
-
-    return new Promise((resolve, reject) => {
-      process.on('error', reject);
-      process.on('exit', (code) => {
-        if (code === 0) resolve();
-        else reject(new Error(`Monitor exited with code ${code}`));
-      });
-    });
-  }
-
-  stopProcess(): void {
-    if (this.process) {
-      this.process.kill();
-      console.log(chalk.green(`Stopped AO process: ${this.processName}`));
-      this.process = null;
-      this.processName = null;
     }
   }
 

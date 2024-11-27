@@ -1,7 +1,8 @@
-# create-ao-app 
+# create-ao-app
+
 ![NPM License](https://img.shields.io/npm/l/create-ao-app)
 
-A CLI tool for quickly scaffolding AO-powered applications with Next.js or Nuxt.js.
+"Create-ao-app: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js and Nuxt.js integration."
 
 ## Features
 
@@ -14,6 +15,10 @@ A CLI tool for quickly scaffolding AO-powered applications with Next.js or Nuxt.
 - 🔧 AO Process Management
 - 🖥️ Development Server Integration
 - 🤖 AI-Powered Code Generation
+
+## Built with
+
+TypeScript, Node.js, Commander, Inquirer, OpenAI API, Anthropic API, fs-extra, ora, chalk, Jest, pnpm
 
 ## Installation
 
@@ -46,9 +51,6 @@ cao init --path ./existing-directory
 
 # Specify package manager
 cao init my-app --package-manager pnpm
-
-# Using the create alias
-cao create my-app
 ```
 
 ### Development Commands
@@ -69,24 +71,32 @@ cao dev:ao -e "your-eval-input"
 
 ### AO Process Management
 
+AO processes run on the Arweave network and can be managed using the following commands:
+
 ```bash
-# Start AO processes
-cao ao:start
-cao ao:start -n "my-process"
+# Start an AO process
+cao ao:start                              # Start with default name
+cao ao:start -n "my-process"              # Start with custom name
+cao ao:start -w "./wallet.json"           # Use specific wallet
+cao ao:start --tag-name "type" --tag-value "counter"  # Add tags
+cao ao:start --module <txid>              # Use specific module
+cao ao:start --cron "1-minute"            # Setup with cron job
+cao ao:start --sqlite                     # Use SQLite module
+cao ao:start --monitor                    # Start with monitoring
 
-# Monitor AO processes
-cao ao:monitor
-cao ao:monitor -p "pattern-to-match"
-cao ao:monitor --json
+# Monitor processes
+cao ao:monitor                            # Monitor default process
+cao ao:monitor my-process                 # Monitor specific process
 
-# Evaluate AO processes
-cao ao:eval "your-input"
-cao ao:eval "your-input" --await
-cao ao:eval "your-input" --timeout 10000
+# Watch process output
+cao ao:watch my-process                   # Watch specific process
 
-# Schedule AO processes
-cao ao:schedule -i 5000 -t "tickFunction"
-cao ao:schedule-stop
+# List processes
+cao ao:list                               # List all processes for your wallet
+
+# Setup cron jobs
+cao ao:cron my-process "1-minute"         # Setup minute cron
+cao ao:cron my-process "30-second"        # Setup second cron
 ```
 
 ### AI Code Generation
@@ -94,12 +104,14 @@ cao ao:schedule-stop
 Before using the AI code generation feature, you need to configure an API key. You have several options:
 
 1. Set environment variable:
+
 ```bash
 export OPENAI_API_KEY='your-api-key-here'
 export ANTHROPIC_API_KEY='your-anthropic-api-key-here'
 ```
 
 2. Configure API key through CLI:
+
 ```bash
 cao config:api
 ```
@@ -107,6 +119,7 @@ cao config:api
 3. The CLI will prompt for an API key if none is found when running generation commands.
 
 Generate code:
+
 ```bash
 # Generate a Lua contract
 cao ao:generate -p "Create a simple counter contract" -t contract -o ./ao/counter.lua
@@ -119,7 +132,7 @@ cao ao:generate -p "Create a token contract"
 
 # Specify AI provider and model
 cao ao:generate -p "Create a counter contract" --provider openai --model gpt-4
-cao ao:generate -p "Create a counter contract" --provider anthropic --model claude-3-5-sonnet-latest
+cao ao:generate -p "Create a counter contract" --provider anthropic --model claude-3-opus-20240229
 ```
 
 ## Project Structure
@@ -145,11 +158,42 @@ my-app/
 luaFiles: []              # Lua files to load
 packageManager: 'pnpm'    # npm, yarn, or pnpm
 framework: 'nextjs'       # nextjs or nuxtjs
-autoStart: false         # Auto-start AO processes
+processName: 'my-process' # Default process name
 ports:
   dev: 3000             # Development server port
-processName: 'my-process' # Custom AO process name
 ```
+
+## Command Options
+
+| Command      | Option                    | Description                                    |
+|--------------|---------------------------|------------------------------------------------|
+| `ao:start`   | `-n, --name <name>`      | Name for the AO process                       |
+|              | `-w, --wallet <path>`     | Path to wallet file                           |
+|              | `-d, --data <path>`       | Data file path                                |
+|              | `--tag-name <name>`       | Process tag name                              |
+|              | `--tag-value <value>`     | Process tag value                             |
+|              | `--module <txid>`         | Module ID to use                              |
+|              | `--cron <frequency>`      | Setup cron job (e.g., "1-minute")            |
+|              | `--monitor`               | Monitor the process                           |
+|              | `--sqlite`                | Use sqlite3 AOS Module                        |
+|              | `--gateway-url <url>`     | Set Arweave gateway URL                      |
+|              | `--cu-url <url>`          | Set Computer Unit URL                         |
+|              | `--mu-url <url>`          | Set Messenger Unit URL                        |
+| `ao:monitor` | `[name]`                  | Process name to monitor                       |
+| `ao:watch`   | `<name>`                  | Process name to watch                         |
+| `ao:list`    |                          | List processes for your wallet                |
+| `ao:cron`    | `<name>`                  | Process name                                  |
+|              | `<frequency>`             | Cron frequency (e.g., "1-minute")            |
+| `init`       | `-f, --framework`         | Framework to use (nextjs or nuxtjs)          |
+|              | `-p, --path`              | Path to create project                        |
+|              | `--package-manager`       | Package manager (npm, yarn, pnpm)            |
+| `dev:ao`     | `-n, --name <name>`      | Name for the AO process                       |
+|              | `--monitor`               | Monitor process after starting                |
+| `ao:generate`| `-p, --prompt <text>`     | Description of code to generate              |
+|              | `-t, --type <type>`       | Type of code (contract/module/test)          |
+|              | `-o, --output <path>`     | Output file path                             |
+|              | `--provider <provider>`   | AI provider (openai/anthropic)               |
+|              | `--model <model>`         | Specific AI model to use                     |
 
 ## Development
 
@@ -184,33 +228,6 @@ pnpm link:global   # Link globally
 pnpm unlink:global # Unlink global installation
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-1. **Command Not Found**
-```bash
-# Ensure global installation
-pnpm add -g create-ao-app
-
-# Or fix npm global permissions
-sudo chown -R $USER /usr/local/lib/node_modules
-```
-
-2. **AOS Not Installed**
-```bash
-# Install AOS CLI
-npm install -g @permaweb/aos-cli
-```
-
-3. **Development Server Issues**
-```bash
-# Check if port is in use
-lsof -i :3000
-# Kill process if needed
-kill -9 <PID>
-```
-
 ## Contributing
 
 1. Fork the repository
@@ -226,35 +243,3 @@ MIT License - see the [LICENSE](LICENSE) file for details
 ## Support
 
 For support, please [open an issue](https://github.com/Utitofon-Udoekong/create-ao-app/issues) on GitHub.
-
-### Command Options
-
-| Command         | Option                          | Description                                      |
-|-----------------|---------------------------------|--------------------------------------------------|
-| `ao:start`      | `-n, --process-name <name>`    | Set custom name for AO process                  |
-|                 | `-m, --monitor-process`        | Monitor process after starting                   |
-|                 | `-e, --evaluate <input>`       | Evaluate process after starting                  |
-|                 | `--config-path <path>`         | Custom config file path                          |
-| `ao:monitor`    | `-p, --pattern [pattern]`      | Message pattern to match                         |
-|                 | `--json`                       | Output in JSON format                            |
-| `ao:eval`       | `<input>`                      | Input for evaluating the AO process              |
-|                 | `--await`                      | Wait for response                                |
-|                 | `--timeout <ms>`               | Timeout in milliseconds, default is 5000        |
-| `ao:schedule`   | `-i, --interval <ms>`          | Scheduler interval, default is 1000             |
-|                 | `-t, --tick <function>`        | Tick function name                               |
-| `ao:schedule-stop` |                               | Stop the process scheduler                       |
-| `config`        | `--get <key>`                  | Get configuration value                          |
-|                 | `--set <key> <value>`          | Set configuration value                          |
-|                 | `--delete <key>`               | Delete configuration value                       |
-| `dev`           | `--config-path <path>`         | Path to configuration file                       |
-| `dev:ao`        | `-m, --monitor-process`        | Monitor AO processes after starting              |
-|                 | `-e, --evaluate <input>`       | Evaluate process after starting                  |
-|                 | `--config-path <path>`         | Custom config file path                          |
-| `init`          | `-f, --framework <framework>`  | Framework to use (nextjs or nuxtjs)            |
-|                 | `-p, --path <path>`            | Path to create the project in                   |
-|                 | `--package-manager <pm>`       | Package manager to use (npm, yarn, pnpm)       |
-| `ao:generate`   | `-p, --prompt <text>`          | Description of the Lua code you want to generate |
-|                 | `-t, --type <type>`            | Type of code (contract/module/test)             |
-|                 | `-o, --output <path>`          | Output file path                                |
-|                 | `--provider <provider>`         | AI provider to use (openai or anthropic)       |
-|                 | `--model <model>`              | Specific AI model to use                        |

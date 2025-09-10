@@ -58,7 +58,7 @@ export class ConfigCommand extends BaseCommand {
       
       // Check if project exists
       if (!(await this.projectExists(projectPath))) {
-        throw new Error('No AO project found. Run "forge init" to create a new project.');
+        throw new Error('No AO project found. Run "ao-forge init" to create a new project.');
       }
       
       // Create config manager
@@ -234,24 +234,24 @@ export class ConfigCommand extends BaseCommand {
   private showHelp(): void {
     this.logInfo('Configuration Management Commands:');
     this.logInfo('');
-    this.logInfo('  forge config get <key>              # Get a configuration value');
-    this.logInfo('  forge config set <key> <value>      # Set a configuration value');
-    this.logInfo('  forge config list                   # List all configuration values');
-    this.logInfo('  forge config init                   # Initialize default configuration');
-    this.logInfo('  forge config validate               # Validate configuration file');
-    this.logInfo('  forge config backup                 # Create a backup of configuration');
-    this.logInfo('  forge config restore <path>         # Restore configuration from backup');
+    this.logInfo('  ao-forge config get <key>              # Get a configuration value');
+    this.logInfo('  ao-forge config set <key> <value>      # Set a configuration value');
+    this.logInfo('  ao-forge config list                   # List all configuration values');
+    this.logInfo('  ao-forge config init                   # Initialize default configuration');
+    this.logInfo('  ao-forge config validate               # Validate configuration file');
+    this.logInfo('  ao-forge config backup                 # Create a backup of configuration');
+    this.logInfo('  ao-forge config restore <path>         # Restore configuration from backup');
     this.logInfo('');
     this.logInfo('Options:');
     this.logInfo('  --format <format>       Output format (json, yaml)');
     this.logInfo('');
     this.logInfo('Examples:');
-    this.logInfo('  forge config get processName');
-    this.logInfo('  forge config set processName "my-process"');
-    this.logInfo('  forge config set ports.dev 8080');
-    this.logInfo('  forge config list --format json');
-    this.logInfo('  forge config backup');
-    this.logInfo('  forge config restore ./ao.config.yml.backup.1234567890');
+    this.logInfo('  ao-forge config get processName');
+    this.logInfo('  ao-forge config set processName "my-process"');
+    this.logInfo('  ao-forge config set ports.dev 8080');
+    this.logInfo('  ao-forge config list --format json');
+    this.logInfo('  ao-forge config backup');
+    this.logInfo('  ao-forge config restore ./ao.config.yml.backup.1234567890');
   }
 
   protected getHelpText(): string {
@@ -268,14 +268,14 @@ Subcommands:
   restore <path> Restore configuration from backup
 
 Examples:
-  forge config get processName
-  forge config set processName "my-process"
-  forge config set ports.dev 8080
-  forge config list --format json
-  forge config init
-  forge config validate
-  forge config backup
-  forge config restore ./backup.yml
+  ao-forge config get processName
+  ao-forge config set processName "my-process"
+  ao-forge config set ports.dev 8080
+  ao-forge config list --format json
+  ao-forge config init
+  ao-forge config validate
+  ao-forge config backup
+  ao-forge config restore ./backup.yml
     `;
   }
 } 

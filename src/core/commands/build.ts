@@ -5,6 +5,10 @@ import { ConfigManager } from '../managers/config-manager.js';
 import { ProcessManager } from '../managers/process-manager.js';
 import path from 'path';
 import fs from 'fs-extra';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 export class BuildCommand extends BaseCommand {
   name = 'build';
@@ -15,31 +19,6 @@ export class BuildCommand extends BaseCommand {
       description: 'Output directory for build artifacts',
       required: false,
       defaultValue: 'dist'
-    },
-    {
-      flag: '--minify',
-      description: 'Minify output files',
-      required: false
-    },
-    {
-      flag: '--sourcemap',
-      description: 'Generate source maps',
-      required: false
-    },
-    {
-      flag: '--analyze',
-      description: 'Analyze bundle size',
-      required: false
-    },
-    {
-      flag: '--process <name>',
-      description: 'Build specific AO process',
-      required: false
-    },
-    {
-      flag: '--watch',
-      description: 'Watch for changes and rebuild',
-      required: false
     },
     {
       flag: '--clean',
@@ -57,7 +36,7 @@ export class BuildCommand extends BaseCommand {
       
       // Check if project exists
       if (!(await this.projectExists(projectPath))) {
-        throw new Error('No AO project found. Run "forge init" to create a new project.');
+        throw new Error('No AO project found. Run "ao-forge init" to create a new project.');
       }
       
       // Load configuration
@@ -76,10 +55,8 @@ export class BuildCommand extends BaseCommand {
       // Build framework
       await this.buildFramework(projectManager, config, options);
       
-      // Build AO process if configured
-      if (config.runWithAO || options.process) {
-        await this.buildAOProcess(processManager, config, options);
-      }
+      // TODO: AO process building will be handled by AOS CLI
+      // Users should run: aos [process-name] --load ./ao/contract.lua
       
       // Generate build artifacts
       await this.generateBuildArtifacts(projectPath, config, options);
@@ -123,19 +100,13 @@ export class BuildCommand extends BaseCommand {
     
     try {
       const pm = config.packageManager || 'npm';
-      const buildCommands = {
-        'npm': 'npm run build',
-        'yarn': 'yarn run build',
-        'pnpm': 'pnpm run build'
-      };
-      const buildCommand = buildCommands[pm as keyof typeof buildCommands];
+      const buildCommand = `${pm} run build`;
 
-      if (!buildCommand) {
-        throw new Error(`Unsupported package manager: ${pm}`);
-      }
-
-      // TODO: Implement framework build logic
-      // This should run the appropriate build command for the framework
+      this.logInfo(`Running: ${buildCommand}`);
+      
+      // Execute the build command
+      const projectPath = this.determineProjectPath();
+      await execAsync(buildCommand, { cwd: projectPath });
       this.logSuccess('Framework built successfully');
       
     } catch (error) {
@@ -263,7 +234,11 @@ export class BuildCommand extends BaseCommand {
   private showBuildSummary(outputDir: string): void {
     this.logInfo('\n📦 Build Summary:');
     this.logInfo(`Output directory: ${outputDir}`);
-    this.logInfo('Ready for deployment with: forge deploy');
+    this.logInfo('Framework build completed successfully');
+    this.logInfo('');
+    this.logInfo('For AO process deployment, use the AOS CLI:');
+    this.logInfo('  npm i -g https://get_ao.g8way.io');
+    this.logInfo('  aos [process-name] --load ./ao/contract.lua');
   }
 
   protected getHelpText(): string {
@@ -272,19 +247,17 @@ Build the project for production deployment.
 
 The build process will:
 - Compile and optimize the framework code
-- Build AO process contracts (if configured)
 - Generate deployment artifacts
 - Create a deployment manifest
 
 Examples:
-  forge build                    # Build with default settings
-  forge build -o ./build        # Specify output directory
-  forge build --minify          # Minify output files
-  forge build --sourcemap       # Generate source maps
-  forge build --analyze         # Analyze bundle size
-  forge build --process my-app  # Build specific AO process
-  forge build --clean           # Clean output before building
-  forge build --watch           # Watch for changes and rebuild
+  ao-forge build                    # Build with default settings
+  ao-forge build -o ./build        # Specify output directory
+  ao-forge build --clean           # Clean output before building
+
+Note: AO process building is handled by the AOS CLI:
+  npm i -g https://get_ao.g8way.io
+  aos [process-name] --load ./ao/contract.lua
     `;
   }
 } 

@@ -1,7 +1,6 @@
 import { BaseCommand } from './base-command.js';
 import { CommandOption } from '../../types/cli.js';
 import { ProjectManager } from '../managers/project-manager.js';
-import { ProcessManager } from '../managers/process-manager.js';
 import { ConfigManager } from '../managers/config-manager.js';
 import path from 'path';
 import fs from 'fs-extra';
@@ -21,11 +20,6 @@ export class DevCommand extends BaseCommand {
       description: 'Host for development server',
       required: false,
       defaultValue: 'localhost'
-    },
-    {
-      flag: '--process <name>',
-      description: 'Run specific process in development mode',
-      required: false
     },
     {
       flag: '--no-watch',
@@ -53,7 +47,7 @@ export class DevCommand extends BaseCommand {
       
       // Check if project exists
       if (!(await this.projectExists(projectPath))) {
-        throw new Error('No AO project found. Run "forge init" to create a new project.');
+        throw new Error('No AO project found. Run "ao-forge init" to create a new project.');
       }
       
       // Load configuration
@@ -65,28 +59,20 @@ export class DevCommand extends BaseCommand {
         // TODO: Set debug logging level
       }
       
-      // Create managers
+      // Create project manager
       const projectManager = new ProjectManager(projectPath);
-      const processManager = new ProcessManager();
       
       // Start development server
       const devProcess = await projectManager.startDevServer(config, options.quiet);
       
-      // Start AO process if configured
-      if (config.runWithAO || options.process) {
-        await this.startAOProcess(processManager, config, options);
-      }
-      
       this.logSuccess('Development server started successfully');
+      
+      // Show AOS CLI guide
+      this.showAOSCLIGuide(config);
       
       // Keep the process running for development
       process.on('SIGINT', async () => {
         this.logStart('Shutting down development server');
-        
-        // Stop AO process if running
-        if (processManager.isProcessRunning()) {
-          await processManager.stopProcess();
-        }
         
         // Kill dev process
         devProcess.kill();
@@ -106,7 +92,7 @@ export class DevCommand extends BaseCommand {
 
   private async projectExists(projectPath: string): Promise<boolean> {
     try {
-      const packageJsonPath = path.join(projectPath, 'packageon');
+      const packageJsonPath = path.join(projectPath, 'package.json');
       const configPath = path.join(projectPath, 'ao.config.yml');
       
       return await fs.pathExists(packageJsonPath) || await fs.pathExists(configPath);
@@ -115,57 +101,58 @@ export class DevCommand extends BaseCommand {
     }
   }
 
-  private async startAOProcess(processManager: ProcessManager, config: any, options: any): Promise<void> {
-    try {
-      // Check AOS installation
-      const aosInstalled = await processManager.checkAOSInstallation();
-      if (!aosInstalled) {
-        throw new Error('AOS is not installed. Please install AOS first: npm i -g https://get_ao.g8way.io');
-      }
-      
-      // Find Lua files
-      const luaFiles = await processManager.findLuaFiles(process.cwd());
-      if (luaFiles.length > 0) {
-        // Update config with found Lua files
-        config.luaFiles = luaFiles;
-      }
-      
-      // Start AO process
-      const processOptions = {
-        name: options.process || config.processName,
-        monitor: !options.noWatch
-      };
-      
-      await processManager.startAOProcess(process.cwd(), config, processOptions);
-      
-      // Start monitoring if requested
-      if (!options.noWatch) {
-        await processManager.monitorProcess(processOptions.name);
-      }
-      
-    } catch (error) {
-      this.logError('Failed to start AO process', error as Error);
-      // Don't throw - AO process is optional for development
-    }
+  private showAOSCLIGuide(config: any): void {
+    this.logInfo('\n📋 AOS CLI Guide:');
+    this.logInfo('To run AO processes, use the AOS CLI in a separate terminal:');
+    this.logInfo('');
+    this.logInfo('  # Install AOS CLI');
+    this.logInfo('  npm i -g https://get_ao.g8way.io');
+    this.logInfo('');
+    this.logInfo('  # Start an AO process');
+    this.logInfo('  aos [process-name]');
+    this.logInfo('');
+    this.logInfo('  # Load Lua files');
+    this.logInfo('  aos [process-name] --load ./ao/contract.lua');
+    this.logInfo('');
+    this.logInfo('  # Monitor process');
+    this.logInfo('  aos [process-name] --monitor');
+    this.logInfo('');
+    this.logInfo('  # For more AOS commands, visit: https://docs.arweave.org/developers/ao');
+    this.logInfo('');
   }
 
   protected getHelpText(): string {
     return `
-Start the development server with hot reloading and optional AO process integration.
+Start the development server with hot reloading.
 
 The development server will:
 - Start the framework development server (Next, Nuxt, etc.)
-- Optionally start an AO process if configured
-- Enable hot reloading for both frontend and AO process
+- Enable hot reloading for frontend development
 - Open the application in your browser
 
+To run AO processes, use the AOS CLI in a separate terminal:
+
 Examples:
-  forge dev                    # Start dev server on default port
-  forge dev -p 8080           # Start on specific port
-  forge dev --process my-app  # Run specific AO process
-  forge dev --debug           # Enable debug mode
-  forge dev --no-watch        # Disable hot reloading
-  forge dev --quiet           # Minimize framework output
+  ao-forge dev                                    # Start dev server
+  ao-forge dev -p 8080                           # Start on specific port
+  ao-forge dev --debug                           # Enable debug mode
+  ao-forge dev --no-watch                        # Disable hot reloading
+  ao-forge dev --quiet                           # Minimize framework output
+
+AOS CLI Guide:
+  # Install AOS CLI
+  npm i -g https://get_ao.g8way.io
+
+  # Start an AO process
+  aos [process-name]
+
+  # Load Lua files
+  aos [process-name] --load ./ao/contract.lua
+
+  # Monitor process
+  aos [process-name] --monitor
+
+  # For more AOS commands, visit: https://docs.arweave.org/developers/ao
     `;
   }
-} 
+}

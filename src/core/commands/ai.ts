@@ -782,14 +782,14 @@ export class AICommand extends BaseCommand {
 AI-powered code generation and assistance for AO smart contracts.
 
 Examples:
-  forge ai --prompt "Create a counter process"                    # Generate from prompt
-  forge ai --file contract.lua --refactor                         # Refactor existing file
-  forge ai --file contract.lua --test                             # Generate tests
-  forge ai --file contract.lua --analyze                          # Analyze code
-  forge ai --template counter --output counter.lua                # Generate from template
-  forge ai --interactive                                          # Start interactive session
-  forge ai --provider anthropic --model claude-3-5-sonnet-latest # Use specific provider/model
-  forge ai --type module --prompt "Create a utility module"       # Generate specific type
+  ao-forge ai --prompt "Create a counter process"                    # Generate from prompt
+  ao-forge ai --file contract.lua --refactor                         # Refactor existing file
+  ao-forge ai --file contract.lua --test                             # Generate tests
+  ao-forge ai --file contract.lua --analyze                          # Analyze code
+  ao-forge ai --template counter --output counter.lua                # Generate from template
+  ao-forge ai --interactive                                          # Start interactive session
+  ao-forge ai --provider anthropic --model claude-3-5-sonnet-latest # Use specific provider/model
+  ao-forge ai --type module --prompt "Create a utility module"       # Generate specific type
 
 Supported types: contract, module, test, template, refactor
 Supported providers: openai, anthropic

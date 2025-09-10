@@ -104,7 +104,7 @@ describe('PluginCommand', () => {
       const helpText = command['getHelpText']();
       expect(helpText).toContain('Plugin Management');
       expect(helpText).toContain('Install plugins to extend Forge');
-      expect(helpText).toContain('forge plugin --install @forge-ao/typescript');
+      expect(helpText).toContain('ao-forge plugin --install @ao-forge-ao/typescript');
     });
   });
 }); 

@@ -17,21 +17,23 @@
 - 🎯 Git repository initialization
 - 💻 Interactive CLI interface
 - ⚡️ Built with TypeScript
-- 🔧 AO Process Management
 - 🖥️ Development Server Integration
 - 🤖 AI-Powered Code Generation
+- 🔨 Simple Build System
+- ⚙️ Configuration Management
+- 🔧 AO Process Management
 
 ## Installation
 
 ```bash
 # Using npm
-npm install -g forge-ao
+npm install -g ao-forge
 
 # Using pnpm (recommended)
-pnpm add -g forge-ao
+pnpm add -g ao-forge
 
 # Or use directly with npx
-npx forge-ao init my-app
+npx ao-forge init my-app
 ```
 
 ## Quick Start
@@ -90,7 +92,7 @@ pnpm build
 pnpm run link:global
 
 # Test the CLI
-forge init test-app
+ao-forge init test-app
 
 # Unlink when done
 pnpm run unlink:global
@@ -104,6 +106,21 @@ pnpm build         # Build project
 pnpm test:cli      # Test CLI directly
 pnpm link:global   # Link globally
 pnpm unlink:global # Unlink global installation
+```
+
+### Running AO Processes
+
+You can manage AO processes using Forge commands or the AOS CLI directly:
+
+```bash
+# Using ao-forge commands
+ao-forge process start -n "my-process"
+ao-forge process stop
+ao-forge process list
+
+# Or use AOS CLI directly
+npm i -g https://get_ao.g8way.io
+aos [process-name] --load ./ao/contract.lua
 ```
 
 ## Contributing

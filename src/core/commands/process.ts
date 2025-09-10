@@ -25,26 +25,6 @@ export class ProcessCommand extends BaseCommand {
       required: false
     },
     {
-      flag: 'monitor',
-      description: 'Monitor a process',
-      required: false
-    },
-    {
-      flag: 'watch',
-      description: 'Watch a process for changes',
-      required: false
-    },
-    {
-      flag: 'evaluate',
-      description: 'Evaluate a process with input',
-      required: false
-    },
-    {
-      flag: 'cron',
-      description: 'Set up cron for a process',
-      required: false
-    },
-    {
       flag: '-n, --name <name>',
       description: 'Process name',
       required: false
@@ -63,16 +43,6 @@ export class ProcessCommand extends BaseCommand {
       flag: '--module <module>',
       description: 'Process module',
       required: false
-    },
-    {
-      flag: '--frequency <frequency>',
-      description: 'Cron frequency (for cron command)',
-      required: false
-    },
-    {
-      flag: '--input <input>',
-      description: 'Input for evaluation (for evaluate command)',
-      required: false
     }
   ];
 
@@ -83,7 +53,7 @@ export class ProcessCommand extends BaseCommand {
       
       // Check if project exists
       if (!(await this.projectExists(projectPath))) {
-        throw new Error('No AO project found. Run "forge init" to create a new project.');
+        throw new Error('No AO project found. Run "ao-forge init" to create a new project.');
       }
       
       // Load configuration
@@ -100,14 +70,6 @@ export class ProcessCommand extends BaseCommand {
         await this.stopProcess(processManager, options);
       } else if (options.list) {
         await this.listProcesses(processManager);
-      } else if (options.monitor) {
-        await this.monitorProcess(processManager, options);
-      } else if (options.watch) {
-        await this.watchProcess(processManager, options);
-      } else if (options.evaluate) {
-        await this.evaluateProcess(processManager, options);
-      } else if (options.cron) {
-        await this.setupCron(processManager, options);
       } else {
         this.showHelp();
       }
@@ -140,18 +102,25 @@ export class ProcessCommand extends BaseCommand {
       // Check AOS installation
       const aosInstalled = await processManager.checkAOSInstallation();
       if (!aosInstalled) {
-        throw new Error('AOS is not installed. Please install AOS first: npm i -g https://get_ao.g8way.io');
+        this.logError('AOS is not installed');
+        this.logInfo('To install AOS, run: npm i -g https://get_ao.g8way.io');
+        this.logInfo('Or visit: https://cookbook_ao.arweave.net/guides/aos/');
+        this.logInfo('');
+        this.logInfo('Once AOS is installed, you can run:');
+        this.logInfo(`  aos ${options.name || config.processName || 'my-process'}`);
+        return;
       }
       
       // Find Lua files
       const luaFiles = await processManager.findLuaFiles(process.cwd());
       if (luaFiles.length > 0) {
         config.luaFiles = luaFiles;
+        this.logInfo(`Found ${luaFiles.length} Lua files: ${luaFiles.join(', ')}`);
       }
       
       // Process options
       const processOptions = {
-        name: options.name || config.processName,
+        name: options.name || config.processName || 'my-process',
         wallet: options.wallet,
         data: options.data,
         module: options.module
@@ -163,6 +132,12 @@ export class ProcessCommand extends BaseCommand {
       
     } catch (error) {
       this.logError('Failed to start AO process', error as Error);
+      this.logInfo('');
+      this.logInfo('You can also start AO processes manually:');
+      this.logInfo(`  aos ${options.name || config.processName || 'my-process'}`);
+      if (config.luaFiles && config.luaFiles.length > 0) {
+        this.logInfo(`  aos ${options.name || config.processName || 'my-process'} --load ${config.luaFiles[0]}`);
+      }
       throw error;
     }
   }
@@ -192,113 +167,47 @@ export class ProcessCommand extends BaseCommand {
     }
   }
 
-  private async monitorProcess(processManager: ProcessManager, options: any): Promise<void> {
-    this.logStart('Starting process monitoring...');
-    
-    try {
-      await processManager.monitorProcess(options.name);
-      
-    } catch (error) {
-      this.logError('Failed to start process monitoring', error as Error);
-      throw error;
-    }
-  }
-
-  private async watchProcess(processManager: ProcessManager, options: any): Promise<void> {
-    this.logStart('Starting process watching...');
-    
-    try {
-      const processName = options.name || 'default';
-      await processManager.watchProcess(processName);
-      
-    } catch (error) {
-      this.logError('Failed to start process watching', error as Error);
-      throw error;
-    }
-  }
-
-  private async evaluateProcess(processManager: ProcessManager, options: any): Promise<void> {
-    this.logStart('Evaluating process...');
-    
-    try {
-      if (!options.input) {
-        throw new Error('Input is required for process evaluation');
-      }
-      
-      await processManager.evaluateProcess(options.input);
-      this.logSuccess('Process evaluation completed');
-      
-    } catch (error) {
-      this.logError('Failed to evaluate process', error as Error);
-      throw error;
-    }
-  }
-
-  private async setupCron(processManager: ProcessManager, options: any): Promise<void> {
-    this.logStart('Setting up cron...');
-    
-    try {
-      if (!options.frequency) {
-        throw new Error('Frequency is required for cron setup');
-      }
-      
-      const processName = options.name || 'default';
-      await processManager.setupCron(processName, options.frequency);
-      
-      this.logSuccess('Cron setup completed');
-      
-    } catch (error) {
-      this.logError('Failed to setup cron', error as Error);
-      throw error;
-    }
-  }
 
   private showHelp(): void {
     this.logInfo('AO Process Management Commands:');
     this.logInfo('');
-    this.logInfo('  forge process start [options]     # Start an AO process');
-    this.logInfo('  forge process stop                # Stop a running process');
-    this.logInfo('  forge process list                # List all processes');
-    this.logInfo('  forge process monitor [options]   # Monitor a process');
-    this.logInfo('  forge process watch [options]     # Watch a process for changes');
-    this.logInfo('  forge process evaluate [options]  # Evaluate a process with input');
-    this.logInfo('  forge process cron [options]      # Set up cron for a process');
+    this.logInfo('  ao-forge process start [options]     # Start an AO process');
+    this.logInfo('  ao-forge process stop                # Stop a running process');
+    this.logInfo('  ao-forge process list                # List all processes');
     this.logInfo('');
     this.logInfo('Options:');
     this.logInfo('  -n, --name <name>       Process name');
     this.logInfo('  --wallet <path>         Path to wallet file');
     this.logInfo('  --data <data>           Process data');
     this.logInfo('  --module <module>       Process module');
-    this.logInfo('  --frequency <freq>      Cron frequency (for cron command)');
-    this.logInfo('  --input <input>         Input for evaluation (for evaluate command)');
     this.logInfo('');
     this.logInfo('Examples:');
-    this.logInfo('  forge process start -n my-process');
-    this.logInfo('  forge process start --wallet ./keyon');
-    this.logInfo('  forge process monitor -n my-process');
-    this.logInfo('  forge process evaluate --input "hello world"');
-    this.logInfo('  forge process cron -n my-process --frequency "*/5 * * * *"');
+    this.logInfo('  ao-forge process start -n my-process');
+    this.logInfo('  ao-forge process start --wallet ./keyon');
+    this.logInfo('  ao-forge process list');
+    this.logInfo('');
+    this.logInfo('Note: For advanced AO process management, use the AOS CLI directly:');
+    this.logInfo('  npm i -g https://get_ao.g8way.io');
+    this.logInfo('  aos [process-name] --load ./ao/contract.lua');
   }
 
   protected getHelpText(): string {
     return `
-Manage AO processes including starting, stopping, monitoring, and evaluation.
+Manage AO processes including starting, stopping, and listing.
 
 Subcommands:
   start     Start an AO process
   stop      Stop a running AO process
   list      List all processes
-  monitor   Monitor a process in real-time
-  watch     Watch a process for changes and restart
-  evaluate  Evaluate a process with input
-  cron      Set up scheduled tasks for a process
 
 Examples:
-  forge process start -n my-process
-  forge process start --wallet ./keyon --data "initial data"
-  forge process monitor -n my-process
-  forge process evaluate --input "hello world"
-  forge process cron -n my-process --frequency "*/5 * * * *"
+  ao-forge process start -n my-process
+  ao-forge process start --wallet ./keyon --data "initial data"
+  ao-forge process list
+
+Note: For advanced AO process management, use the AOS CLI directly:
+  npm i -g https://get_ao.g8way.io
+  aos [process-name] --load ./ao/contract.lua
     `;
   }
 } 

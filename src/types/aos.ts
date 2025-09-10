@@ -95,6 +95,7 @@ export interface CreateProjectOptions {
   processName?: string;
   runWithAO?: boolean;
   initializeGit?: boolean;
+
 }
 
 export interface ProcessInfo {

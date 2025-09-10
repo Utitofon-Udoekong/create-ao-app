@@ -58,7 +58,7 @@ export class DeployCommand extends BaseCommand {
       
       // Check if project exists
       if (!(await this.projectExists(projectPath))) {
-        throw new Error('No AO project found. Run "forge init" to create a new project.');
+        throw new Error('No AO project found. Run "ao-forge init" to create a new project.');
       }
       
       // Load configuration
@@ -132,13 +132,13 @@ export class DeployCommand extends BaseCommand {
       const buildPath = path.resolve(buildDir);
       
       if (!(await fs.pathExists(buildPath))) {
-        throw new Error(`Build directory not found: ${buildDir}. Run "forge build" first.`);
+        throw new Error(`Build directory not found: ${buildDir}. Run "ao-forge build" first.`);
       }
       
       // Check for manifest file
       const manifestPath = path.join(buildPath, 'manifeston');
       if (!(await fs.pathExists(manifestPath))) {
-        throw new Error('Deployment manifest not found. Run "forge build" first.');
+        throw new Error('Deployment manifest not found. Run "ao-forge build" first.');
       }
       
       this.logSuccess('Deployment artifacts validated');
@@ -160,7 +160,7 @@ export class DeployCommand extends BaseCommand {
       const allTags = {
         ...config.tags,
         ...additionalTags,
-        'App-Name': 'forge-ao',
+        'App-Name': 'ao-forge-ao',
         'App-Version': '1.0.0',
         'Environment': options.environment
       };
@@ -251,14 +251,14 @@ The deployment process will:
 - Generate deployment metadata
 
 Examples:
-  forge deploy                    # Deploy to testnet
-  forge deploy -e mainnet        # Deploy to mainnet
-  forge deploy --wallet ./keyon # Use specific wallet
-  forge deploy --dry-run         # Simulate deployment
-  forge deploy --process my-app  # Deploy specific AO process
-  forge deploy --build-dir ./build # Use custom build directory
-  forge deploy --tags "env=prod,version=1.0" # Add custom tags
-  forge deploy --no-build        # Skip building before deployment
+  ao-forge deploy                    # Deploy to testnet
+  ao-forge deploy -e mainnet        # Deploy to mainnet
+  ao-forge deploy --wallet ./keyon # Use specific wallet
+  ao-forge deploy --dry-run         # Simulate deployment
+  ao-forge deploy --process my-app  # Deploy specific AO process
+  ao-forge deploy --build-dir ./build # Use custom build directory
+  ao-forge deploy --tags "env=prod,version=1.0" # Add custom tags
+  ao-forge deploy --no-build        # Skip building before deployment
 
 Environments:
   testnet    - Arweave testnet (default)

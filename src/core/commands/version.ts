@@ -10,7 +10,7 @@ export class VersionCommand extends BaseCommand {
   async execute(options: any): Promise<void> {
     this.logStart('Displaying version information');
     
-    console.log(chalk.blue('🔥 Forge'));
+    console.log(chalk.blue('🔥 AO Forge'));
     console.log(chalk.white('Version: 2.0.0'));
     console.log(chalk.gray('AO Application Builder'));
     console.log(chalk.gray('Built with TypeScript and Node'));

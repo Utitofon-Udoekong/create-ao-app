@@ -108,7 +108,7 @@ export interface PluginManifest {
   peerDependencies?: Record<string, string>;
   main: string;
   type: 'module' | 'commonjs';
-  forge?: {
+  aoForge?: {
     hooks?: string[];
     commands?: string[];
     configSchema?: any;

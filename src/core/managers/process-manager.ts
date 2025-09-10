@@ -101,7 +101,7 @@ export class ProcessManager {
   private schedules: Map<string, Schedule> = new Map();
 
   constructor() {
-    this.processFilePath = path.join(os.homedir(), '.forge-processeson');
+    this.processFilePath = path.join(os.homedir(), '.ao-forge-processeson');
   }
 
   private async saveProcessInfo(info: ProcessInfo): Promise<void> {
@@ -122,9 +122,24 @@ export class ProcessManager {
   async checkAOSInstallation(): Promise<boolean> {
     logger.info('Checking AOS installation...');
     try {
-      // TODO: Implement AOS installation check
-      // This should check if 'aos' command is available
-      return true;
+      // Check if 'aos' command is available in PATH using execSync
+      const { execSync } = await import('child_process');
+      
+      try {
+        execSync('aos --version', { stdio: 'pipe' });
+        logger.success('AOS is installed');
+        return true;
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          logger.error('AOS is not installed');
+          logger.info('\nTo install AOS, run:');
+          logger.info('npm i -g https://get_ao.g8way.io');
+          logger.info('\nOr visit: https://cookbook_ao.arweave.net/guides/aos/');
+        } else {
+          logger.error('AOS installation check failed:', error.message);
+        }
+        return false;
+      }
     } catch (error) {
       logger.error('Failed to check AOS installation', error as Error);
       return false;
@@ -157,6 +172,109 @@ export class ProcessManager {
   }
 
   async startAOProcess(projectPath: string, config: AOConfig, options: ProcessOptions = {}): Promise<ChildProcess> {
+    return this.startAOProcessForeground(projectPath, config, options);
+  }
+
+  async startAOProcessBackground(projectPath: string, config: AOConfig, options: ProcessOptions = {}): Promise<ChildProcess> {
+    logger.info('Starting AO process in background...');
+    try {
+      const args: string[] = [];
+
+      // Process name (defaults to "default" if not specified)
+      if (options.name || config.processName) {
+        const processName = options.name || config.processName || 'default';
+        args.push(processName);
+        this.processName = processName;
+      }
+
+      // Add wallet if specified
+      if (options.wallet) {
+        args.push('--wallet', options.wallet);
+      }
+
+      // Add Lua files to load
+      if (config.luaFiles && config.luaFiles.length > 0) {
+        for (const file of config.luaFiles) {
+          args.push('--load', file);
+        }
+      }
+
+      // Add other options
+      if (options.data) args.push('--data', options.data);
+      if (options.tagName && options.tagValue) {
+        args.push('--tag-name', options.tagName, '--tag-value', options.tagValue);
+      }
+      if (options.module) args.push('--module', options.module);
+      if (options.cron) args.push('--cron', options.cron);
+      if (options.monitor) args.push('--monitor');
+      if (options.sqlite) args.push('--sqlite');
+      if (options.gatewayUrl) args.push('--gateway-url', options.gatewayUrl);
+      if (options.cuUrl) args.push('--cu-url', options.cuUrl);
+      if (options.muUrl) args.push('--mu-url', options.muUrl);
+
+      // Start the process in background (detached)
+      this.process = spawn('aos', args, {
+        cwd: projectPath,
+        stdio: 'ignore', // Ignore all stdio to run truly in background
+        detached: true   // Detach from parent process
+      });
+
+      // Handle spawn errors (like ENOENT when aos is not found)
+      this.process.on('error', (error: any) => {
+        if (error.code === 'ENOENT') {
+          logger.error('AOS command not found. Please install AOS first:');
+          logger.info('npm i -g https://get_ao.g8way.io');
+          logger.info('Or visit: https://cookbook_ao.arweave.net/guides/aos/');
+        } else {
+          logger.error('Failed to start AO process:', error.message);
+        }
+        throw error;
+      });
+
+      // Set up process state
+      this.processState = {
+        id: this.processName || 'default',
+        status: 'running',
+        startTime: new Date(),
+        features: {
+          coroutines: config.aos?.features?.coroutines || false,
+          requestResponse: false,
+          defaultActions: false,
+          bootloader: config.aos?.features?.bootloader || false,
+          weavedrive: config.aos?.features?.weavedrive || false,
+          version: config.aos?.version || '1.x'
+        },
+        messages: [],
+        errors: [],
+        config: {
+          name: this.processName || 'default',
+          monitor: options.monitor || false,
+          sqlite: options.sqlite || false,
+          tags: {},
+          luaFiles: config.luaFiles || []
+        }
+      };
+
+      // Save process info
+      await this.saveProcessInfo({
+        name: this.processName || 'default',
+        pid: this.process.pid || 0,
+        startTime: new Date().toISOString(),
+        config
+      });
+
+      // Unref the process so it doesn't keep the parent process alive
+      this.process.unref();
+
+      logger.success(`AO process started in background (PID: ${this.process.pid})`);
+      return this.process;
+    } catch (error) {
+      logger.error('Failed to start AO process in background', error as Error);
+      throw error;
+    }
+  }
+
+  async startAOProcessForeground(projectPath: string, config: AOConfig, options: ProcessOptions = {}): Promise<ChildProcess> {
     logger.info('Starting AO process...');
     try {
       const args: string[] = [];
@@ -197,6 +315,18 @@ export class ProcessManager {
       this.process = spawn('aos', args, {
         cwd: projectPath,
         stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      // Handle spawn errors (like ENOENT when aos is not found)
+      this.process.on('error', (error: any) => {
+        if (error.code === 'ENOENT') {
+          logger.error('AOS command not found. Please install AOS first:');
+          logger.info('npm i -g https://get_ao.g8way.io');
+          logger.info('Or visit: https://cookbook_ao.arweave.net/guides/aos/');
+        } else {
+          logger.error('Failed to start AO process:', error.message);
+        }
+        throw error;
       });
 
       // Set up process state

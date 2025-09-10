@@ -44,7 +44,7 @@ export class PluginCommand extends BaseCommand {
       flag: '--registry <url>',
       description: 'Plugin registry URL',
       required: false,
-      defaultValue: 'https://registry.forge-ao.com'
+      defaultValue: 'https://registry.ao-forge-ao.com'
     }
   ];
 
@@ -153,19 +153,19 @@ export class PluginCommand extends BaseCommand {
     console.log(`
 Plugin Management Commands:
 
-  forge plugin --install <name>     # Install a plugin
-  forge plugin --uninstall <name>   # Uninstall a plugin
-  forge plugin --list               # List installed plugins
-  forge plugin --enable <name>      # Enable a plugin
-  forge plugin --disable <name>     # Disable a plugin
-  forge plugin --search <query>     # Search for plugins
-  forge plugin --update <name>      # Update a plugin
+  ao-forge plugin --install <name>     # Install a plugin
+  ao-forge plugin --uninstall <name>   # Uninstall a plugin
+  ao-forge plugin --list               # List installed plugins
+  ao-forge plugin --enable <name>      # Enable a plugin
+  ao-forge plugin --disable <name>     # Disable a plugin
+  ao-forge plugin --search <query>     # Search for plugins
+  ao-forge plugin --update <name>      # Update a plugin
 
 Examples:
-  forge plugin --install @forge-ao/typescript
-  forge plugin --list
-  forge plugin --search "typescript"
-  forge plugin --enable @forge-ao/typescript
+  ao-forge plugin --install @ao-forge-ao/typescript
+  ao-forge plugin --list
+  ao-forge plugin --search "typescript"
+  ao-forge plugin --enable @ao-forge-ao/typescript
     `);
   }
 
@@ -177,10 +177,10 @@ Install plugins to extend Forge's functionality with additional commands,
 build tools, deployment options, and more.
 
 Examples:
-  forge plugin --install @forge-ao/typescript
-  forge plugin --list
-  forge plugin --search "typescript"
-  forge plugin --enable @forge-ao/typescript
+  ao-forge plugin --install @ao-forge-ao/typescript
+  ao-forge plugin --list
+  ao-forge plugin --search "typescript"
+  ao-forge plugin --enable @ao-forge-ao/typescript
     `;
   }
 } 

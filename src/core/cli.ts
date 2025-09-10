@@ -28,7 +28,7 @@ export class CLI {
 
   constructor(options: CLIOptions = {}) {
     this.options = {
-      name: 'forge',
+      name: 'ao-forge',
       version: '2.0.0',
       description: 'Forge: CLI tool to create AO-powered applications',
       enableDebug: false,
@@ -74,16 +74,18 @@ export class CLI {
     new InitCommand().register(this.program);
     new VersionCommand().register(this.program);
     new BuildCommand().register(this.program);
-    new DeployCommand().register(this.program);
     new DevCommand().register(this.program);
     
-    // AI and plugin commands
+    // AI commands
     new AICommand().register(this.program);
-    new PluginCommand().register(this.program);
     
-    // Legacy migrated commands
+    // Process and config management
     new ProcessCommand().register(this.program);
     new ConfigCommand().register(this.program);
+    
+    // TODO: Re-enable these commands when implemented
+    // new DeployCommand().register(this.program);
+    // new PluginCommand().register(this.program);
   }
 
   async initialize(): Promise<void> {

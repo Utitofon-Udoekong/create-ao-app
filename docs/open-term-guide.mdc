@@ -1,0 +1,165 @@
+---
+description: Open Term Guide
+globs:
+alwaysApply: false
+---
+# Open-Term Integration & Cleanup Plan
+
+## 🧹 **Cleanup Tasks**
+
+### 1. **Remove Custom Terminal Launcher**
+- Delete `src/core/utils/terminal-launcher.ts` (entire file)
+- Remove all terminal launching logic from `src/core/commands/dev.ts`
+- Clean up any unused imports and methods
+
+### 2. **Remove Terminal-Related Code from Dev Command**
+- Remove `startAOProcessTerminal` method
+- Remove `detectTerminalCommand` method  
+- Remove `getWSLTerminalCommand` method
+- Remove `getLinuxTerminalCommand` method
+- Remove `isWSL` method
+- Remove `showManualAOInstructions` method
+
+### 3. **Clean Up Package Dependencies**
+- Remove any unused terminal-related dependencies
+- Keep only essential dependencies
+
+## 🔧 **Integration Tasks**
+
+### 1. **Install open-term**
+```bash
+pnpm add open-term
+```
+
+### 2. **Update Dev Command Logic**
+Replace the complex terminal launching with simple open-term usage:
+
+```typescript
+// In src/core/commands/dev.ts
+import VTexec from 'open-term';
+
+private async startAOProcessTerminal(config: any, processName: string, options: any): Promise<void> {
+  this.logInfo('Opening new terminal for AO process...');
+  
+  try {
+    // Build the aos command
+    const args = [processName];
+    if (config.luaFiles && config.luaFiles.length > 0) {
+      for (const file of config.luaFiles) {
+        args.push('--load', file);
+      }
+    }
+    if (!options.noWatch) {
+      args.push('--monitor');
+    }
+    
+    const aosCommand = `aos ${args.join(' ')}`;
+    const fullCommand = `cd "${process.cwd()}" && ${aosCommand}; exec bash`;
+    
+    // Use open-term to launch terminal
+    VTexec(fullCommand);
+    
+    this.logSuccess('AO process terminal opened');
+    
+  } catch (error) {
+    this.logError('Failed to open terminal for AO process', error as Error);
+    this.logInfo('Falling back to manual mode...');
+    this.showManualAOInstructions(config, processName, options);
+  }
+}
+```
+
+### 3. **Add Fallback Manual Instructions**
+Keep a simple manual mode for when open-term fails:
+
+```typescript
+private showManualAOInstructions(config: any, processName: string, options: any): void {
+  this.logInfo('AO Process Manual Mode');
+  this.logInfo('Please run the following command in a separate terminal:');
+  
+  const args = [processName];
+  if (config.luaFiles && config.luaFiles.length > 0) {
+    for (const file of config.luaFiles) {
+      args.push('--load', file);
+    }
+  }
+  if (!options.noWatch) {
+    args.push('--monitor');
+  }
+  
+  const aosCommand = `aos ${args.join(' ')}`;
+  this.logInfo(`\n  ${aosCommand}\n`);
+}
+```
+
+### 4. **Update AO Process Logic**
+Simplify the AO process handling:
+
+```typescript
+private async startAOProcess(processManager: ProcessManager, config: any, options: any): Promise<void> {
+  this.logInfo('Starting AO process logic...');
+  
+  // Check AOS installation
+  await processManager.checkAOSInstallation();
+  
+  // Find and update Lua files
+  await this.findAndUpdateLuaFiles(config);
+  
+  // Get process name
+  const processName = options.process || config.processName || 'ao-process';
+  
+  // Parse AO mode
+  const aoMode = options._optionValues?.aoMode || 'background';
+  
+  switch (aoMode) {
+    case 'background':
+      await this.startAOProcessBackground(processManager, config, processName, options);
+      break;
+    case 'terminal':
+      await this.startAOProcessTerminal(config, processName, options);
+      break;
+    case 'manual':
+      this.showManualAOInstructions(config, processName, options);
+      break;
+    default:
+      this.logError(`Unknown AO mode: ${aoMode}`);
+      this.logInfo('Available modes: background, terminal, manual');
+      break;
+  }
+}
+```
+
+## 📁 **Files to Modify**
+
+### **Files to Delete:**
+- `src/core/utils/terminal-launcher.ts` ❌
+
+### **Files to Update:**
+- `src/core/commands/dev.ts` - Remove terminal logic, add open-term
+- `package.json` - Add open-term dependency
+
+### **Files to Keep (minimal changes):**
+- `src/core/managers/process-manager.ts` - Keep background process logic
+- `src/types/aos.ts` - Keep type definitions
+
+## 🎯 **Expected Benefits**
+
+1. **Code Reduction**: ~500+ lines of terminal logic → ~20 lines with open-term
+2. **Better Reliability**: open-term handles edge cases we haven't thought of
+3. **Cross-platform**: Works on Linux, Windows, macOS, WSL out of the box
+4. **Maintained**: Community-maintained package with regular updates
+5. **Simpler Debugging**: Less custom code = fewer bugs
+
+## 🚀 **Implementation Steps**
+
+1. **Install open-term**: `pnpm add open-term`
+2. **Delete terminal-launcher.ts**
+3. **Update dev.ts** with open-term integration
+4. **Test on different platforms** (WSL, Linux, Windows)
+5. **Update documentation** to reflect the change
+6. **Remove unused dependencies**
+
+This approach will give us a much cleaner, more reliable terminal launching solution that handles all the edge cases we've been struggling with!
+
+---
+

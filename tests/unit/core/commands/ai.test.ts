@@ -125,7 +125,7 @@ describe('AICommand', () => {
       const helpText = command['getHelpText']();
       expect(helpText).toContain('AI-powered code generation');
       expect(helpText).toContain('Examples:');
-      expect(helpText).toContain('forge ai --prompt');
+      expect(helpText).toContain('ao-forge ai --prompt');
       expect(helpText).toContain('Supported providers: openai, anthropic');
     });
   });

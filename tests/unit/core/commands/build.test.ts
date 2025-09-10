@@ -75,9 +75,9 @@ describe('BuildCommand', () => {
     it('should return help text with examples', () => {
       const helpText = command['getHelpText']();
       expect(helpText).toContain('Examples:');
-      expect(helpText).toContain('forge build');
-      expect(helpText).toContain('forge build --watch');
-      expect(helpText).toContain('forge build --process my-app');
+      expect(helpText).toContain('ao-forge build');
+      expect(helpText).toContain('ao-forge build --watch');
+      expect(helpText).toContain('ao-forge build --process my-app');
     });
   });
 }); 

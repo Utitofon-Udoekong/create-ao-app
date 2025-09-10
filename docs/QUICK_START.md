@@ -12,10 +12,10 @@ Get up and running with Forge in 5 minutes! 🚀
 
 ```bash
 # Install globally
-npm install -g forge-ao
+npm install -g ao-forge-ao
 
 # Or use npx (no installation required)
-npx forge-ao init my-app
+npx ao-forge-ao init my-app
 ```
 
 ## Quick Start
@@ -24,7 +24,7 @@ npx forge-ao init my-app
 
 ```bash
 # Create a new AO project
-forge init my-first-ao-app
+ao-forge init my-first-ao-app
 
 # Navigate to the project
 cd my-first-ao-app
@@ -34,27 +34,24 @@ cd my-first-ao-app
 
 ```bash
 # Generate a simple counter contract
-forge ai --template counter --output ao/counter.lua
+ao-forge ai --template counter --output ao/counter.lua
 
 # Or use AI to generate from description
-forge ai --prompt "Create a simple token contract with transfer function" --output ao/token.lua
+ao-forge ai --prompt "Create a simple token contract with transfer function" --output ao/token.lua
 ```
 
 ### 3. Start Development
 
 ```bash
 # Start development server
-forge dev
-
-# Or start with AO process monitoring
-forge dev:ao
+ao-forge dev
 ```
 
 ### 4. Deploy Your Contract
 
 ```bash
 # Deploy to AO network
-forge ao:start -n "my-counter" --tag-name "type" --tag-value "counter"
+ao-forge ao:start -n "my-counter" --tag-name "type" --tag-value "counter"
 ```
 
 ## Interactive AI Session
@@ -63,7 +60,7 @@ Experience the power of AI-assisted development:
 
 ```bash
 # Start interactive session
-forge ai --interactive
+ao-forge ai --interactive
 
 # Try these commands in the session:
 > generate Create a simple voting contract
@@ -79,36 +76,36 @@ forge ai --interactive
 
 ```bash
 # 1. Generate DAO contract
-forge ai --template dao --output ao/dao.lua
+ao-forge ai --template dao --output ao/dao.lua
 
 # 2. Generate tests
-forge ai --file ao/dao.lua --test --output ao/tests/dao.test.lua
+ao-forge ai --file ao/dao.lua --test --output ao/tests/dao.test.lua
 
 # 3. Analyze and optimize
-forge ai --file ao/dao.lua --analyze
-forge ai --file ao/dao.lua --optimize security
+ao-forge ai --file ao/dao.lua --analyze
+ao-forge ai --file ao/dao.lua --optimize security
 
 # 4. Generate documentation
-forge ai --file ao/dao.lua --document markdown --output docs/dao.md
+ao-forge ai --file ao/dao.lua --document markdown --output docs/dao.md
 
 # 5. Deploy
-forge ao:start -n "my-dao" --tag-name "type" --tag-value "dao"
+ao-forge ao:start -n "my-dao" --tag-name "type" --tag-value "dao"
 ```
 
 ### Building a Marketplace
 
 ```bash
 # 1. Generate marketplace contract
-forge ai --template marketplace --output ao/marketplace.lua
+ao-forge ai --template marketplace --output ao/marketplace.lua
 
 # 2. Generate integration tests
-forge ai --file ao/marketplace.lua --integration-tests api --output ao/tests/marketplace.integration.lua
+ao-forge ai --file ao/marketplace.lua --integration-tests api --output ao/tests/marketplace.integration.lua
 
 # 3. Security audit
-forge ai --file ao/marketplace.lua --audit
+ao-forge ai --file ao/marketplace.lua --audit
 
 # 4. Deploy with monitoring
-forge ao:start -n "my-marketplace" --monitor
+ao-forge ao:start -n "my-marketplace" --monitor
 ```
 
 ## Configuration
@@ -121,8 +118,8 @@ export OPENAI_API_KEY='your-openai-key'
 export ANTHROPIC_API_KEY='your-anthropic-key'
 
 # Option 2: CLI configuration
-forge config set ai.openai_key 'your-key'
-forge config set ai.anthropic_key 'your-key'
+ao-forge config set ai.openai_key 'your-key'
+ao-forge config set ai.anthropic_key 'your-key'
 ```
 
 ### Project Configuration
@@ -168,49 +165,49 @@ Quick start with these pre-built templates:
 ### Code Generation
 ```bash
 # From prompt
-forge ai --prompt "Create a simple game contract"
+ao-forge ai --prompt "Create a simple game contract"
 
 # From template
-forge ai --template nft
+ao-forge ai --template nft
 
 # Interactive
-forge ai --interactive
+ao-forge ai --interactive
 ```
 
 ### Code Analysis
 ```bash
 # Analyze code quality
-forge ai --file contract.lua --analyze
+ao-forge ai --file contract.lua --analyze
 
 # Security audit
-forge ai --file contract.lua --audit
+ao-forge ai --file contract.lua --audit
 
 # Performance optimization
-forge ai --file contract.lua --optimize performance
+ao-forge ai --file contract.lua --optimize performance
 ```
 
 ### Documentation
 ```bash
 # Generate markdown docs
-forge ai --file contract.lua --document markdown
+ao-forge ai --file contract.lua --document markdown
 
 # Generate HTML docs
-forge ai --file contract.lua --document html
+ao-forge ai --file contract.lua --document html
 ```
 
 ### Testing
 ```bash
 # Generate unit tests
-forge ai --file contract.lua --test
+ao-forge ai --file contract.lua --test
 
 # Generate integration tests
-forge ai --file contract.lua --integration-tests api
+ao-forge ai --file contract.lua --integration-tests api
 ```
 
 ## Next Steps
 
 1. **Explore Templates** - Try different contract templates
-2. **Interactive AI** - Use `forge ai --interactive` for guided development
+2. **Interactive AI** - Use `ao-forge ai --interactive` for guided development
 3. **Advanced Features** - Experiment with optimization, auditing, and batch processing
 4. **Deploy** - Deploy your contracts to the AO network
 5. **Monitor** - Use monitoring features to track your processes

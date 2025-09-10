@@ -13,13 +13,11 @@ export class InitCommand extends BaseCommand {
   options: CommandOption[] = [
     {
       flag: '-f, --framework <framework>',
-      description: 'Framework to use (nextjs, nuxtjs, svelte)',
-      defaultValue: 'nextjs'
+      description: 'Framework to use (nextjs, nuxtjs, svelte)'
     },
     {
       flag: '-p, --package-manager <manager>',
-      description: 'Package manager (npm, yarn, pnpm)',
-      defaultValue: 'pnpm'
+      description: 'Package manager (npm, yarn, pnpm)'
     },
     {
       flag: '--path <path>',
@@ -27,13 +25,11 @@ export class InitCommand extends BaseCommand {
     },
     {
       flag: '--port <port>',
-      description: 'Development server port',
-      defaultValue: '3000'
+      description: 'Development server port'
     },
     {
       flag: '--process-name <name>',
-      description: 'AO process name',
-      defaultValue: 'ao-process'
+      description: 'AO process name'
     },
     {
       flag: '--run-with-ao',
@@ -44,7 +40,8 @@ export class InitCommand extends BaseCommand {
       flag: '--git',
       description: 'Initialize git repository',
       required: false
-    }
+    },
+
   ];
 
   async execute(options: any): Promise<void> {
@@ -76,13 +73,14 @@ export class InitCommand extends BaseCommand {
     }
   }
 
-    private async runInteractiveMode(options?: any): Promise<CreateProjectOptions> {
+  private async runInteractiveMode(options?: any): Promise<CreateProjectOptions> {
     logger.info('🚀 Welcome to Forge! Let\'s create your AO project.');
     logger.info('');
 
     // Build prompts dynamically based on what options are provided
     const prompts: any[] = [];
     
+    // Check if name was provided (either as positional argument or flag)
     if (!options?.name) {
       prompts.push({
         type: 'input',
@@ -100,7 +98,8 @@ export class InitCommand extends BaseCommand {
       });
     }
 
-    if (!options?.framework) {
+    // Check if framework was explicitly provided via flag
+    if (!this.isOptionExplicitlyProvided(options, 'framework')) {
       prompts.push({
         type: 'list',
         name: 'framework',
@@ -114,7 +113,8 @@ export class InitCommand extends BaseCommand {
       });
     }
 
-    if (!options?.packageManager) {
+    // Check if package manager was explicitly provided via flag
+    if (!this.isOptionExplicitlyProvided(options, 'packageManager')) {
       prompts.push({
         type: 'list',
         name: 'packageManager',
@@ -128,7 +128,8 @@ export class InitCommand extends BaseCommand {
       });
     }
 
-    if (!options?.port) {
+    // Check if port was explicitly provided via flag
+    if (!this.isOptionExplicitlyProvided(options, 'port')) {
       prompts.push({
         type: 'input',
         name: 'port',
@@ -144,7 +145,8 @@ export class InitCommand extends BaseCommand {
       });
     }
 
-    if (!options?.processName) {
+    // Check if process name was explicitly provided via flag
+    if (!this.isOptionExplicitlyProvided(options, 'processName')) {
       prompts.push({
         type: 'input',
         name: 'processName',
@@ -159,7 +161,8 @@ export class InitCommand extends BaseCommand {
       });
     }
 
-    if (options?.git === undefined) {
+    // Check if git flag was explicitly provided
+    if (!this.isOptionExplicitlyProvided(options, 'git')) {
       prompts.push({
         type: 'confirm',
         name: 'initializeGit',
@@ -168,7 +171,8 @@ export class InitCommand extends BaseCommand {
       });
     }
 
-    if (options?.runWithAo === undefined) {
+    // Check if run-with-ao flag was explicitly provided
+    if (!this.isOptionExplicitlyProvided(options, 'runWithAo')) {
       prompts.push({
         type: 'confirm',
         name: 'runWithAO',
@@ -177,20 +181,40 @@ export class InitCommand extends BaseCommand {
       });
     }
 
+
+
     const answers = await inquirer.prompt(prompts);
 
     // Create project options from provided options and interactive answers
     const projectOptions: CreateProjectOptions = {
       name: options?.name || answers.name,
-      framework: options?.framework || answers.framework,
-      packageManager: options?.packageManager || answers.packageManager,
-      port: parseInt(options?.port || answers.port),
-      processName: options?.processName || answers.processName,
-      runWithAO: options?.runWithAo !== undefined ? options.runWithAo : answers.runWithAO,
-      initializeGit: options?.git !== undefined ? options.git : answers.initializeGit
+      framework: options?.framework || answers.framework || 'nextjs',
+      packageManager: options?.packageManager || answers.packageManager || 'pnpm',
+      port: parseInt(options?.port || answers.port || '3000'),
+      processName: options?.processName || answers.processName || 'ao-process',
+      runWithAO: this.isOptionExplicitlyProvided(options, 'runWithAo') ? options.runWithAo : (answers.runWithAO !== undefined ? answers.runWithAO : false),
+      initializeGit: this.isOptionExplicitlyProvided(options, 'git') ? options.git : (answers.initializeGit !== undefined ? answers.initializeGit : true),
+
     };
 
     return projectOptions;
+  }
+
+  /**
+   * Check if an option was explicitly provided via command-line flag
+   * This is needed because Commander.js doesn't distinguish between default values and explicit flags
+   */
+  private isOptionExplicitlyProvided(options: any, optionName: string): boolean {
+    if (!options) return false;
+    
+    // Check if the option exists in the options object
+    // For boolean flags, we need to check if they were explicitly set
+    if (optionName === 'git' || optionName === 'runWithAo') {
+      return optionName in options;
+    }
+    
+    // For other options, check if they have a value and it's not undefined
+    return options[optionName] !== undefined && options[optionName] !== null;
   }
 
   private determineProjectPath(options: any): string {
@@ -204,10 +228,10 @@ export class InitCommand extends BaseCommand {
     logger.info('\n🎉 Project created successfully!');
     logger.info('\nNext steps:');
     logger.info(`  cd ${path.relative(process.cwd(), projectPath)}`);
-    logger.info('  forge dev          # Start development server');
-    logger.info('  forge build        # Build the project');
-    logger.info('  forge deploy       # Deploy to Arweave');
-    logger.info('\nFor more information, visit: https://docs.forge-ao.com');
+    logger.info('  ao-forge dev          # Start development server');
+    logger.info('  ao-forge build        # Build the project');
+    logger.info('  ao-forge deploy       # Deploy to Arweave');
+    logger.info('\nFor more information, visit: https://docs.ao-forge-ao.com');
   }
 
   protected async validateOptions(options: any): Promise<void> {
@@ -245,22 +269,27 @@ export class InitCommand extends BaseCommand {
     return `
 Create a new AO project with the specified framework and configuration.
 
+The command runs in interactive mode by default, asking for any options not provided via flags.
+You can provide any combination of flags to skip those specific prompts.
+
 Examples:
-  forge init my-app
-  forge init my-app --framework nuxtjs
-  forge init my-app --package-manager yarn --path ./custom-path
-  forge init my-app --port 8080 --process-name my-process
-  forge init my-app --run-with-ao --git
+  ao-forge init                    # Interactive mode - asks for all options
+  ao-forge init my-app            # Interactive mode - asks for all options except name
+  ao-forge init --framework nuxtjs # Interactive mode - asks for all options except framework
+  ao-forge init my-app --framework nuxtjs --package-manager yarn
+  ao-forge init my-app --port 8080 --process-name my-process
+  ao-forge init my-app --run-with-ao --git
+
 
 Frameworks:
-  nextjs    - Next (React)
-  nuxtjs    - Nuxt (Vue)
-  svelte    - SvelteKit
+  nextjs    - Next.js (React)
+  nuxtjs    - Nuxt.js (Vue)
+  svelte    - SvelteKit (Svelte)
 
 Package Managers:
   npm       - Node Package Manager
   yarn      - Yarn Package Manager
-  pnpm      - pnpm Package Manager
+  pnpm      - pnpm Package Manager (recommended)
     `;
   }
 } 

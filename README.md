@@ -19,6 +19,7 @@ _Repo metadata_
 - **[Quick Start Guide](docs/QUICK_START.md)** — Get up and running in minutes
 - **[CLI Reference](docs/CLI_REFERENCE.md)** — Complete command documentation and options
 
+
 ## Features
 
 - 🚀 Quick project scaffolding
@@ -33,6 +34,10 @@ _Repo metadata_
 - ⚙️ Configuration Management
 - 🔧 AO Process Management
 
+## Built with
+
+TypeScript, Node.js, Commander, Inquirer, OpenAI API, Anthropic API, fs-extra, ora, chalk, Jest, pnpm
+
 ## Installation
 
 ```bash
@@ -43,16 +48,20 @@ npm install -g ao-forge
 pnpm add -g ao-forge
 
 # Or use directly with npx
+
 npx ao-forge init my-app
+
 ```
 
 ## Quick Start
+
 
 See the [Quick Start Guide](docs/QUICK_START.md) for step-by-step instructions.
 
 ## CLI Usage
 
 See the [CLI Reference](docs/CLI_REFERENCE.md) for all commands, options, and advanced usage.
+
 
 ## AI-Powered Development
 
@@ -81,9 +90,42 @@ my-app/
 
 ## Configuration (ao.config.yml)
 
+
 The configuration file is now fully documented in the [CLI Reference](docs/CLI_REFERENCE.md#configuration-file-ao-config-yml). Use the provided template as a starting point.
 
 ---
+
+## Command Options
+
+| Command      | Option                    | Description                                    |
+|--------------|---------------------------|------------------------------------------------|
+| `ao:start`   | `-n, --name <name>`      | Name for the AO process                       |
+|              | `-w, --wallet <path>`     | Path to wallet file                           |
+|              | `-d, --data <path>`       | Data file path                                |
+|              | `--tag-name <name>`       | Process tag name                              |
+|              | `--tag-value <value>`     | Process tag value                             |
+|              | `--module <txid>`         | Module ID to use                              |
+|              | `--cron <frequency>`      | Setup cron job (e.g., "1-minute")            |
+|              | `--monitor`               | Monitor the process                           |
+|              | `--sqlite`                | Use sqlite3 AOS Module                        |
+|              | `--gateway-url <url>`     | Set Arweave gateway URL                      |
+|              | `--cu-url <url>`          | Set Computer Unit URL                         |
+|              | `--mu-url <url>`          | Set Messenger Unit URL                        |
+| `ao:monitor` | `[name]`                  | Process name to monitor                       |
+| `ao:watch`   | `<name>`                  | Process name to watch                         |
+| `ao:list`    |                          | List processes for your wallet                |
+| `ao:cron`    | `<name>`                  | Process name                                  |
+|              | `<frequency>`             | Cron frequency (e.g., "1-minute")            |
+| `init`       | `-f, --framework`         | Framework to use (nextjs or nuxtjs)          |
+|              | `-p, --path`              | Path to create project                        |
+|              | `--package-manager`       | Package manager (npm, yarn, pnpm)            |
+| `dev:ao`     | `-n, --name <name>`      | Name for the AO process                       |
+|              | `--monitor`               | Monitor process after starting                |
+| `ao:generate`| `-p, --prompt <text>`     | Description of code to generate              |
+|              | `-t, --type <type>`       | Type of code (contract/module/test)          |
+|              | `-o, --output <path>`     | Output file path                             |
+|              | `--provider <provider>`   | AI provider (openai/anthropic)               |
+|              | `--model <model>`         | Specific AI model to use                     |
 
 ## Development
 
@@ -117,6 +159,7 @@ pnpm test:cli      # Test CLI directly
 pnpm link:global   # Link globally
 pnpm unlink:global # Unlink global installation
 ```
+
 
 ### Running AO Processes
 

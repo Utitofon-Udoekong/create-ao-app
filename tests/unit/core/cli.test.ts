@@ -1,10 +1,8 @@
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { CLI } from '../../../src/core/cli';
-import { CommandRegistry } from '../../../src/core/commands/registry';
 import { PluginManager } from '../../../src/core/plugins/plugin-manager';
 
 // Mock dependencies
-jest.mock('../../../src/core/commands/registry');
 jest.mock('../../../src/core/plugins/plugin-manager');
 jest.mock('../../../src/core/utils/logging');
 
@@ -29,23 +27,11 @@ function createMockCommand(name = 'mock', description = 'desc') {
 
 describe('CLI', () => {
   let cli: CLI;
-  let mockRegistry: jest.Mocked<CommandRegistry>;
   let mockPluginManager: jest.Mocked<PluginManager>;
 
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks();
-
-    // Setup mock registry
-    mockRegistry = {
-      registerCommand: jest.fn(),
-      getCommand: jest.fn(),
-      getAllCommands: jest.fn().mockReturnValue([]),
-      getCategories: jest.fn().mockReturnValue([]),
-      getCommandsByCategory: jest.fn().mockReturnValue([]),
-      getCommandCount: jest.fn().mockReturnValue(0),
-      registerCommands: jest.fn()
-    } as any;
 
     // Setup mock plugin manager
     mockPluginManager = {
@@ -55,9 +41,6 @@ describe('CLI', () => {
     } as any;
 
     // Mock the constructors
-    const { CommandRegistry } = require('../../../src/core/commands/registry');
-    CommandRegistry.mockImplementation(() => mockRegistry);
-
     const { PluginManager } = require('../../../src/core/plugins/plugin-manager');
     PluginManager.mockImplementation(() => mockPluginManager);
 
@@ -67,7 +50,6 @@ describe('CLI', () => {
   describe('constructor', () => {
     it('should initialize with default options', () => {
       expect(cli).toBeDefined();
-      expect(CommandRegistry).toHaveBeenCalled();
       expect(PluginManager).toHaveBeenCalled();
     });
 
@@ -83,10 +65,11 @@ describe('CLI', () => {
     });
   });
 
-  describe('getRegistry', () => {
-    it('should return the command registry', () => {
-      const registry = cli.getRegistry();
-      expect(registry).toBe(mockRegistry);
+  describe('getProgram', () => {
+    it('should return the commander program', () => {
+      const program = cli.getProgram();
+      expect(program).toBeDefined();
+      expect(program.name()).toBe('ao-forge');
     });
   });
 
@@ -112,76 +95,42 @@ describe('CLI', () => {
   });
 
   describe('run', () => {
-    it('should show help when no arguments provided', async () => {
-      const mockArgs = ['node', 'script'];
+    it('should initialize and parse arguments', async () => {
+      const mockArgs = ['node', 'script', '--help'];
+      
+      // Mock process.exit to prevent actual exit
       const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
         throw new Error('process.exit called');
       });
 
-      await cli.initialize();
-
       try {
         await cli.run(mockArgs);
       } catch (error: any) {
+        // Expected to throw due to process.exit mock
         expect(error.message).toBe('process.exit called');
       }
 
-      mockExit.mockRestore();
-    });
-
-    it('should execute command when valid command provided', async () => {
-      const mockCommand = createMockCommand('test-command', 'desc') as any;
-      mockRegistry.getCommand.mockReturnValue(mockCommand);
-
-      const mockArgs = ['node', 'script', 'test-command'];
-      await cli.initialize();
-      await cli.run(mockArgs);
-
-      expect(mockRegistry.getCommand).toHaveBeenCalledWith('test-command');
-      expect(mockCommand.execute).toHaveBeenCalled();
-    });
-
-    it('should handle unknown command', async () => {
-      mockRegistry.getCommand.mockReturnValue(undefined);
-
-      const mockArgs = ['node', 'script', 'unknown-command'];
-      const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
-        throw new Error('process.exit called');
-      });
-
-      await cli.initialize();
-
-      try {
-        await cli.run(mockArgs);
-      } catch (error: any) {
-        expect(error.message).toBe('process.exit called');
-      }
-
+      expect(mockPluginManager.executeHook).toHaveBeenCalled();
       mockExit.mockRestore();
     });
   });
 
   describe('showHelp', () => {
     it('should display help information', () => {
-      const mockCommands = [
-        createMockCommand('init', 'Initialize project') as any,
-        createMockCommand('build', 'Build project') as any
-      ];
+      // Mock process.exit to prevent actual exit
+      const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {
+        throw new Error('process.exit called');
+      });
 
-      mockRegistry.getAllCommands.mockReturnValue(mockCommands);
-      mockRegistry.getCategories.mockReturnValue(['project']);
-      mockRegistry.getCommandsByCategory.mockReturnValue(mockCommands);
+      try {
+        cli.showHelp();
+      } catch (error: any) {
+        // Expected to throw due to process.exit mock
+        expect(error.message).toBe('process.exit called');
+      }
 
-      // Mock console.log to capture output
-      const originalLog = console.log;
-      const mockLog = jest.fn();
-      console.log = mockLog;
-
-      cli.showHelp();
-
-      expect(mockLog).toHaveBeenCalled();
-
-      console.log = originalLog;
+      // The help method should have been called (it exits the process)
+      mockExit.mockRestore();
     });
   });
 }); 

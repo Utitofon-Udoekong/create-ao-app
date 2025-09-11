@@ -1,7 +1,7 @@
 {
   "name": "ao-forge",
   "version": "2.0.0",
-  "description": "Forge: CLI tool to create AO-powered applications",
+  "description": "AO-Forge: CLI tool to create AO-powered applications",
   "type": "module",
   "bin": {
     "ao-forge": "./dist/index.js"
@@ -33,7 +33,7 @@
     "nuxtjs",
     "svelte"
   ],
-  "author": "",
+  "author": "Utitofon Udoekong",
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",

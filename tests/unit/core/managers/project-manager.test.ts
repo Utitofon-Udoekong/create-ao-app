@@ -64,6 +64,26 @@ describe('ProjectManager', () => {
       fs.ensureDir = jest.fn().mockResolvedValue(undefined);
       fs.writeFile = jest.fn().mockResolvedValue(undefined);
       fs.writeJSON = jest.fn().mockResolvedValue(undefined);
+      fs.readJSON = jest.fn().mockResolvedValue({ name: 'template-project' });
+      fs.pathExists = jest.fn().mockImplementation((path: string) => {
+        if (path.includes('package.json')) {
+          return Promise.resolve(true);
+        }
+        return Promise.resolve(false); // Directory doesn't exist initially
+      });
+
+      // Mock child process for executeCommand
+      const mockChild: any = {
+        on: jest.fn((event: string, callback: Function) => {
+          if (event === 'close') {
+            setTimeout(() => callback(0), 0); // Simulate successful exit
+          }
+          return mockChild;
+        })
+      };
+
+      const { spawn } = require('child_process');
+      spawn.mockReturnValue(mockChild);
 
       const options: CreateProjectOptions = {
         name: 'test-project',
@@ -87,6 +107,10 @@ describe('ProjectManager', () => {
       const fs = require('fs-extra');
       fs.stat = jest.fn().mockResolvedValue({ isDirectory: () => true });
       fs.readdir = jest.fn().mockResolvedValue(['existing-file.txt']);
+      fs.pathExists = jest.fn().mockResolvedValue(true); // Directory exists
+      fs.ensureDir = jest.fn().mockResolvedValue(undefined);
+      fs.writeFile = jest.fn().mockResolvedValue(undefined);
+      fs.writeJSON = jest.fn().mockResolvedValue(undefined);
 
       const options: CreateProjectOptions = {
         name: 'test-project',
@@ -95,7 +119,7 @@ describe('ProjectManager', () => {
       };
 
       await expect(projectManager.createProject(options)).rejects.toThrow(
-        'Directory /test/project is not empty or does not exist'
+        'Directory /test/project is not empty. Please choose a different location or clear the directory.'
       );
     });
   });
@@ -135,7 +159,7 @@ describe('ProjectManager', () => {
 
       const result = await projectManager.startDevServer(config, false);
 
-      expect(mockSpawn).toHaveBeenCalledWith('npm run dev', [], {
+      expect(mockSpawn).toHaveBeenCalledWith('npm exec next dev', [], {
         cwd: '/test/project',
         shell: true,
         stdio: ['inherit', 'pipe', 'pipe']

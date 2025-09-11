@@ -1,11 +1,20 @@
+# AO-Forge
 
-# Forge
+_Repo metadata_
 
-![NPM License](https://img.shields.io/npm/l/forge-ao)
+[![GitHub tag](https://img.shields.io/github/tag/Utitofon-Udoekong/aoforge-cli?include_prereleases=&sort=semver&color=blue)](https://github.com/Utitofon-Udoekong/aoforge-cli/releases/)
+[![License](https://img.shields.io/badge/License-MIT-blue)](#license)
+[![NPM License](https://img.shields.io/npm/l/ao-forge)](https://www.npmjs.com/package/ao-forge)
 
-"🔥 Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, Nuxt.js, and Svelte integration."
+"🔥 AO-Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, Nuxt.js, and Svelte integration."
 
 ## Documentation
+
+<div align="center">
+
+[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://aoforge_arlink.arweave.net/ "Go to project documentation")
+
+</div>
 
 - **[Quick Start Guide](docs/QUICK_START.md)** — Get up and running in minutes
 - **[CLI Reference](docs/CLI_REFERENCE.md)** — Complete command documentation and options
@@ -122,8 +131,8 @@ The configuration file is now fully documented in the [CLI Reference](docs/CLI_R
 
 ```bash
 # Clone the repository
-git clone https://github.com/Utitofon-Udoekong/forge-ao.git
-cd forge-ao
+git clone https://github.com/Utitofon-Udoekong/aoforge-cli.git
+cd aoforge-cli
 
 # Install dependencies
 pnpm install
@@ -177,7 +186,7 @@ aos [process-name] --load ./ao/contract.lua
 
 ## License
 
-MIT License - see the [LICENSE](LICENSE) file for details
+Released under [MIT](/LICENSE) by [@Utitofon-Udoekong](https://github.com/Utitofon-Udoekong).
 
 ## Support
 

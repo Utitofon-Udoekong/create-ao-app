@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import yaml from 'js-yaml';
-import { AOConfig } from './types.js';
+import { AOConfig } from './types';
 
 const CONFIG_FILE_NAME = 'ao.config.yml';
 export const DEFAULT_CONFIG: AOConfig = {

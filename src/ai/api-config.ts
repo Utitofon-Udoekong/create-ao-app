@@ -21,7 +21,7 @@ export class APIKeyManager {
   async loadConfig(): Promise<APIConfig> {
     try {
       await fs.ensureDir(this.configPath);
-      const configFile = path.join(this.configPath, 'api-keys.json');
+      const configFile = path.join(this.configPath, 'api-keyson');
       
       if (await fs.pathExists(configFile)) {
         this.config = await fs.readJSON(configFile);
@@ -37,7 +37,7 @@ export class APIKeyManager {
   async saveConfig(config: APIConfig): Promise<void> {
     try {
       await fs.ensureDir(this.configPath);
-      const configFile = path.join(this.configPath, 'api-keys.json');
+      const configFile = path.join(this.configPath, 'api-keyson');
       await fs.writeJSON(configFile, config, { spaces: 2 });
     } catch (error) {
       console.error('Error saving API configuration:', error);

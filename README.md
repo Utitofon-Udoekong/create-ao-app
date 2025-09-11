@@ -1,20 +1,29 @@
-# create-ao-app
 
-![NPM License](https://img.shields.io/npm/l/create-ao-app)
+# Forge
 
-"Create-ao-app: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js and Nuxt.js integration."
+![NPM License](https://img.shields.io/npm/l/forge-ao)
+
+"🔥 Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, Nuxt.js, and Svelte integration."
+
+## Documentation
+
+- **[Quick Start Guide](docs/QUICK_START.md)** — Get up and running in minutes
+- **[CLI Reference](docs/CLI_REFERENCE.md)** — Complete command documentation and options
+
 
 ## Features
 
 - 🚀 Quick project scaffolding
-- 🔄 Multiple framework support (Next.js, Nuxt.js)
+- 🔄 Multiple framework support (Next.js, Nuxt.js, Svelte)
 - 📦 Automatic dependency installation
 - 🎯 Git repository initialization
 - 💻 Interactive CLI interface
 - ⚡️ Built with TypeScript
-- 🔧 AO Process Management
 - 🖥️ Development Server Integration
 - 🤖 AI-Powered Code Generation
+- 🔨 Simple Build System
+- ⚙️ Configuration Management
+- 🔧 AO Process Management
 
 ## Built with
 
@@ -24,116 +33,34 @@ TypeScript, Node.js, Commander, Inquirer, OpenAI API, Anthropic API, fs-extra, o
 
 ```bash
 # Using npm
-npm install -g create-ao-app
+npm install -g ao-forge
 
 # Using pnpm (recommended)
-pnpm add -g create-ao-app
+pnpm add -g ao-forge
 
 # Or use directly with npx
-npx create-ao-app init my-app
+
+npx ao-forge init my-app
+
 ```
 
-## Usage
+## Quick Start
 
-The CLI can be accessed using either `create-ao-app` or the shorter alias `cao`.
 
-### Creating a New Project
+See the [Quick Start Guide](docs/QUICK_START.md) for step-by-step instructions.
 
-```bash
-# Interactive mode (recommended)
-cao init my-app
+## CLI Usage
 
-# Specify framework
-cao init my-app --framework nextjs
+See the [CLI Reference](docs/CLI_REFERENCE.md) for all commands, options, and advanced usage.
 
-# Use in existing directory
-cao init --path ./existing-directory
 
-# Specify package manager
-cao init my-app --package-manager pnpm
-```
+## AI-Powered Development
 
-### Development Commands
+Forge includes advanced AI capabilities for AO development. See the [AI Commands section](docs/CLI_REFERENCE.md#ai-commands) in the CLI Reference for details and examples.
 
-```bash
-# Start development server only
-cao dev
+## Plugin System
 
-# Start both development server and AO processes
-cao dev:ao
-
-# Start development server with monitoring
-cao dev:ao -m
-
-# Start with process evaluation
-cao dev:ao -e "your-eval-input"
-```
-
-### AO Process Management
-
-AO processes run on the Arweave network and can be managed using the following commands:
-
-```bash
-# Start an AO process
-cao ao:start                              # Start with default name
-cao ao:start -n "my-process"              # Start with custom name
-cao ao:start -w "./wallet.json"           # Use specific wallet
-cao ao:start --tag-name "type" --tag-value "counter"  # Add tags
-cao ao:start --module <txid>              # Use specific module
-cao ao:start --cron "1-minute"            # Setup with cron job
-cao ao:start --sqlite                     # Use SQLite module
-cao ao:start --monitor                    # Start with monitoring
-
-# Monitor processes
-cao ao:monitor                            # Monitor default process
-cao ao:monitor my-process                 # Monitor specific process
-
-# Watch process output
-cao ao:watch my-process                   # Watch specific process
-
-# List processes
-cao ao:list                               # List all processes for your wallet
-
-# Setup cron jobs
-cao ao:cron my-process "1-minute"         # Setup minute cron
-cao ao:cron my-process "30-second"        # Setup second cron
-```
-
-### AI Code Generation
-
-Before using the AI code generation feature, you need to configure an API key. You have several options:
-
-1. Set environment variable:
-
-```bash
-export OPENAI_API_KEY='your-api-key-here'
-export ANTHROPIC_API_KEY='your-anthropic-api-key-here'
-```
-
-2. Configure API key through CLI:
-
-```bash
-cao config:api
-```
-
-3. The CLI will prompt for an API key if none is found when running generation commands.
-
-Generate code:
-
-```bash
-# Generate a Lua contract
-cao ao:generate -p "Create a simple counter contract" -t contract -o ./ao/counter.lua
-
-# Generate a test module
-cao ao:generate -p "Create tests for counter contract" -t test -o ./ao/tests/counter.test.lua
-
-# Generate without saving to file
-cao ao:generate -p "Create a token contract"
-
-# Specify AI provider and model
-cao ao:generate -p "Create a counter contract" --provider openai --model gpt-4
-cao ao:generate -p "Create a counter contract" --provider anthropic --model claude-3-opus-20240229
-```
+Forge supports a plugin system for extending functionality. See [Plugins](docs/CLI_REFERENCE.md#plugin-commands).
 
 ## Project Structure
 
@@ -154,14 +81,10 @@ my-app/
 
 ## Configuration (ao.config.yml)
 
-```yaml
-luaFiles: []              # Lua files to load
-packageManager: 'pnpm'    # npm, yarn, or pnpm
-framework: 'nextjs'       # nextjs or nuxtjs
-processName: 'my-process' # Default process name
-ports:
-  dev: 3000             # Development server port
-```
+
+The configuration file is now fully documented in the [CLI Reference](docs/CLI_REFERENCE.md#configuration-file-ao-config-yml). Use the provided template as a starting point.
+
+---
 
 ## Command Options
 
@@ -199,8 +122,8 @@ ports:
 
 ```bash
 # Clone the repository
-git clone https://github.com/Utitofon-Udoekong/create-ao-app.git
-cd create-ao-app
+git clone https://github.com/Utitofon-Udoekong/forge-ao.git
+cd forge-ao
 
 # Install dependencies
 pnpm install
@@ -212,7 +135,7 @@ pnpm build
 pnpm run link:global
 
 # Test the CLI
-cao init test-app
+ao-forge init test-app
 
 # Unlink when done
 pnpm run unlink:global
@@ -226,6 +149,22 @@ pnpm build         # Build project
 pnpm test:cli      # Test CLI directly
 pnpm link:global   # Link globally
 pnpm unlink:global # Unlink global installation
+```
+
+
+### Running AO Processes
+
+You can manage AO processes using Forge commands or the AOS CLI directly:
+
+```bash
+# Using ao-forge commands
+ao-forge process start -n "my-process"
+ao-forge process stop
+ao-forge process list
+
+# Or use AOS CLI directly
+npm i -g https://get_ao.g8way.io
+aos [process-name] --load ./ao/contract.lua
 ```
 
 ## Contributing
@@ -242,4 +181,4 @@ MIT License - see the [LICENSE](LICENSE) file for details
 
 ## Support
 
-For support, please [open an issue](https://github.com/Utitofon-Udoekong/create-ao-app/issues) on GitHub.
+For support, please [open an issue](https://github.com/Utitofon-Udoekong/aoforge-cli/issues) on GitHub.

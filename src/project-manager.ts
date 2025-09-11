@@ -2,10 +2,10 @@ import inquirer, { DistinctQuestion } from 'inquirer';
 import fs from 'fs-extra';
 import path from 'path';
 import ora from 'ora';
-import { AOConfig, CliOptions, CreateProjectOptions } from './types.js';
-import { detectPackageManager, execAsync } from './utils.js';
+import { AOConfig, CliOptions, CreateProjectOptions } from './types';
+import { detectPackageManager, execAsync } from './utils';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
-import { DEFAULT_CONFIG } from './config.js';
+import { DEFAULT_CONFIG } from './config';
 import chalk from 'chalk';
 import open from 'open';
 

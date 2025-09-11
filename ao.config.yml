@@ -1,0 +1,58 @@
+# AO Configuration File
+# This file configures your AO smart contract project
+
+# Project Settings
+processName: "my-ao-process"
+packageManager: "npm"  # npm, yarn, or pnpm
+framework: "nextjs"    # nextjs, nuxtjs, or svelte
+
+# Development Ports
+ports:
+  dev: 3000
+  build: 3001
+
+# AOS Configuration
+aos:
+  version: "2.x"  # 1.x or 2.x
+  features:
+    coroutines: true      # Enable coroutines for async operations
+    bootloader: false     # Enable bootloader for process initialization
+    weavedrive: false     # Enable WeaveDrive for data persistence
+
+# Lua Files to include in the process
+luaFiles: []
+
+# Run with AO (for development)
+runWithAO: false
+
+# Process Tags (metadata)
+tags:
+  Environment: "development"
+  Project: "my-ao-project"
+  Version: "1.0.0"
+
+# AI Configuration (optional)
+ai:
+  provider: "openai"  # openai, anthropic, or local
+  model: "gpt-4"
+  apiKey: ""  # Set via environment variable FORGE_AI_API_KEY
+  maxTokens: 2000
+  temperature: 0.7
+
+# Plugin Configuration (optional)
+plugins:
+  enabled: []
+  disabled: []
+
+# Build Configuration (optional)
+build:
+  outputDir: "dist"
+  minify: true
+  sourceMaps: false
+
+# Deployment Configuration (optional)
+deployment:
+  target: "arweave"  # arweave, bundlr, or local
+  tags:
+    Content-Type: "application/javascript"
+    App-Name: "AO-Process" 

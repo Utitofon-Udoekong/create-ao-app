@@ -5,8 +5,8 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { APIKeyManager } from './api-config.js';
-import { CodeGenerationOptions } from '../types.js';
+import { APIKeyManager } from './api-config';
+import { CodeGenerationOptions } from '../types';
 
 const AI_MODELS = {
   openai: [

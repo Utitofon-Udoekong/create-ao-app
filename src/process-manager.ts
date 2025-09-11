@@ -1,10 +1,10 @@
 // src/process-manager.ts
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
-import { AOConfig, AOProcessOptions, ProcessInfo } from './types.js';
+import { AOConfig, AOProcessOptions, ProcessInfo } from './types';
 import chalk from 'chalk';
 import ora from 'ora';
-import { isCommandAvailable } from './utils.js';
+import { isCommandAvailable } from './utils';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
 import os from 'os';
@@ -83,7 +83,7 @@ export class AOSProcessManager {
   private processName: string | null = null;
 
   constructor() {
-    this.processFilePath = path.join(os.homedir(), '.ao-processes.json');
+    this.processFilePath = path.join(os.homedir(), '.ao-processeson');
   }
 
   private async saveProcessInfo(info: ProcessInfo): Promise<void> {

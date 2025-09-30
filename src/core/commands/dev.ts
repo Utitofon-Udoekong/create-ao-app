@@ -102,22 +102,19 @@ export class DevCommand extends BaseCommand {
   }
 
   private showAOSCLIGuide(config: any): void {
-    this.logInfo('\n📋 AOS CLI Guide:');
-    this.logInfo('To run AO processes, use the AOS CLI in a separate terminal:');
-    this.logInfo('');
-    this.logInfo('  # Install AOS CLI');
-    this.logInfo('  npm i -g https://get_ao.g8way.io');
+    this.logInfo('\n📋 AO Process Management:');
+    this.logInfo('Use ao-forge commands to manage AO processes:');
     this.logInfo('');
     this.logInfo('  # Start an AO process');
-    this.logInfo('  aos [process-name]');
+    this.logInfo(`  ao-forge process start -n ${config.processName || 'my-process'}`);
     this.logInfo('');
-    this.logInfo('  # Load Lua files');
-    this.logInfo('  aos [process-name] --load ./ao/contract.lua');
+    this.logInfo('  # List running processes');
+    this.logInfo('  ao-forge process list');
     this.logInfo('');
-    this.logInfo('  # Monitor process');
-    this.logInfo('  aos [process-name] --monitor');
+    this.logInfo('  # Stop a process');
+    this.logInfo('  ao-forge process stop');
     this.logInfo('');
-    this.logInfo('  # For more AOS commands, visit: https://docs.arweave.org/developers/ao');
+    this.logInfo('  # For more process commands, run: ao-forge process --help');
     this.logInfo('');
   }
 
@@ -130,7 +127,7 @@ The development server will:
 - Enable hot reloading for frontend development
 - Open the application in your browser
 
-To run AO processes, use the AOS CLI in a separate terminal:
+To run AO processes, use ao-forge process commands:
 
 Examples:
   ao-forge dev                                    # Start dev server
@@ -139,20 +136,17 @@ Examples:
   ao-forge dev --no-watch                        # Disable hot reloading
   ao-forge dev --quiet                           # Minimize framework output
 
-AOS CLI Guide:
-  # Install AOS CLI
-  npm i -g https://get_ao.g8way.io
-
+AO Process Management:
   # Start an AO process
-  aos [process-name]
+  ao-forge process start -n my-process
 
-  # Load Lua files
-  aos [process-name] --load ./ao/contract.lua
+  # List running processes
+  ao-forge process list
 
-  # Monitor process
-  aos [process-name] --monitor
+  # Stop a process
+  ao-forge process stop
 
-  # For more AOS commands, visit: https://docs.arweave.org/developers/ao
+  # For more process commands, run: ao-forge process --help
     `;
   }
 }

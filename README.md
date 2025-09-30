@@ -7,7 +7,7 @@ _Repo metadata_
 [![NPM License](https://img.shields.io/npm/l/ao-forge)](https://www.npmjs.com/package/ao-forge)
 [![protocol.land](https://arweave.net/eZp8gOeR8Yl_cyH9jJToaCrt2He1PHr0pR4o-mHbEcY)](https://protocol.land/#/repository/802dddb8-55e5-4189-a8c1-21033fc4660a)
 
-"🔥 AO-Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, Nuxt.js, and Svelte integration."
+"🔥 AO-Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, React, Vue, Nuxt.js, and SvelteKit integration."
 
 ## Documentation
 
@@ -23,17 +23,17 @@ _Repo metadata_
 
 ## Features
 
-- 🚀 Quick project scaffolding
-- 🔄 Multiple framework support (Next.js, Nuxt.js, Svelte)
-- 📦 Automatic dependency installation
-- 🎯 Git repository initialization
-- 💻 Interactive CLI interface
-- ⚡️ Built with TypeScript
-- 🖥️ Development Server Integration
-- 🤖 AI-Powered Code Generation
-- 🔨 Simple Build System
-- ⚙️ Configuration Management
-- 🔧 AO Process Management
+- 🚀 **Streamlined Project Creation** - Clone framework templates directly from GitHub
+- 🔄 **Multiple Framework Support** - Next.js, React, Vue, Nuxt.js, and SvelteKit
+- 📦 **Automatic Setup** - Dependencies, Git, and AO configuration in one command
+- 🎯 **Smart Configuration** - Auto-detects Lua files and creates `ao.config.yml`
+- 💻 **Interactive CLI** - User-friendly prompts and guided setup
+- ⚡️ **Built with TypeScript** - Full type safety and modern development
+- 🖥️ **Integrated Development** - `ao-forge dev` starts both frontend and AO process
+- 🤖 **AI-Powered Code Generation** - Generate AO contracts with AI assistance
+- 🔨 **Simple Build System** - Framework-agnostic build and deployment
+- ⚙️ **Configuration Management** - Centralized AO process configuration
+- 🔧 **AO Process Management** - Start, stop, and monitor AO processes with `ao-forge process`
 
 ## Built with
 
@@ -79,14 +79,14 @@ my-app/
 ├── README.md
 ├── node_modules/
 ├── package.json
-├── ao.config.yml      # AO configuration file
+├── ao.config.yml      # AO configuration file (auto-generated)
 ├── tsconfig.json
-└── [framework-specific-files]
-├── ao/               # For Nuxt.js projects
+├── ao/                # AO process files (auto-detected)
 │   └── *.lua
-└── src/             # For Next.js projects
-    └── ao/
-        └── *.lua
+└── [framework-specific-files]
+    ├── src/           # React/Vue/SvelteKit projects
+    ├── app/           # Next.js/Nuxt.js projects
+    └── [framework-specific-structure]
 ```
 
 ## Configuration (ao.config.yml)
@@ -98,35 +98,27 @@ The configuration file is now fully documented in the [CLI Reference](docs/CLI_R
 
 ## Command Options
 
-| Command      | Option                    | Description                                    |
-|--------------|---------------------------|------------------------------------------------|
-| `ao:start`   | `-n, --name <name>`      | Name for the AO process                       |
-|              | `-w, --wallet <path>`     | Path to wallet file                           |
-|              | `-d, --data <path>`       | Data file path                                |
-|              | `--tag-name <name>`       | Process tag name                              |
-|              | `--tag-value <value>`     | Process tag value                             |
-|              | `--module <txid>`         | Module ID to use                              |
-|              | `--cron <frequency>`      | Setup cron job (e.g., "1-minute")            |
-|              | `--monitor`               | Monitor the process                           |
-|              | `--sqlite`                | Use sqlite3 AOS Module                        |
-|              | `--gateway-url <url>`     | Set Arweave gateway URL                      |
-|              | `--cu-url <url>`          | Set Computer Unit URL                         |
-|              | `--mu-url <url>`          | Set Messenger Unit URL                        |
-| `ao:monitor` | `[name]`                  | Process name to monitor                       |
-| `ao:watch`   | `<name>`                  | Process name to watch                         |
-| `ao:list`    |                          | List processes for your wallet                |
-| `ao:cron`    | `<name>`                  | Process name                                  |
-|              | `<frequency>`             | Cron frequency (e.g., "1-minute")            |
-| `init`       | `-f, --framework`         | Framework to use (nextjs or nuxtjs)          |
-|              | `-p, --path`              | Path to create project                        |
-|              | `--package-manager`       | Package manager (npm, yarn, pnpm)            |
-| `dev:ao`     | `-n, --name <name>`      | Name for the AO process                       |
-|              | `--monitor`               | Monitor process after starting                |
-| `ao:generate`| `-p, --prompt <text>`     | Description of code to generate              |
-|              | `-t, --type <type>`       | Type of code (contract/module/test)          |
-|              | `-o, --output <path>`     | Output file path                             |
-|              | `--provider <provider>`   | AI provider (openai/anthropic)               |
-|              | `--model <model>`         | Specific AI model to use                     |
+| Command              | Option                    | Description                                    |
+|----------------------|---------------------------|------------------------------------------------|
+| `init`               | `-f, --framework`         | Framework (nextjs, react, vue, nuxtjs, svelte) |
+|                      | `-p, --path`              | Path to create project                        |
+|                      | `--package-manager`       | Package manager (npm, yarn, pnpm)            |
+|                      | `--port`                  | Development server port                       |
+|                      | `--process-name`          | AO process name                               |
+|                      | `--git`                   | Initialize Git repository                     |
+| `process start`      | `-n, --name <name>`      | Name for the AO process                       |
+|                      | `--wallet <path>`         | Path to wallet file                           |
+|                      | `--data <data>`           | Process data                                  |
+|                      | `--module <module>`       | Process module                                |
+| `process stop`       |                          | Stop running AO process                       |
+| `process list`       |                          | List all running processes                    |
+| `dev`                | `--port <port>`          | Development server port                       |
+|                      | `--process-name <name>`  | AO process name                               |
+| `ai generate`        | `-p, --prompt <text>`     | Description of code to generate              |
+|                      | `-t, --type <type>`       | Type of code (contract/module/test)          |
+|                      | `-o, --output <path>`     | Output file path                             |
+|                      | `--provider <provider>`   | AI provider (openai/anthropic)               |
+|                      | `--model <model>`         | Specific AI model to use                     |
 
 ## Development
 
@@ -164,18 +156,30 @@ pnpm unlink:global # Unlink global installation
 
 ### Running AO Processes
 
-You can manage AO processes using Forge commands or the AOS CLI directly:
+ao-forge provides streamlined AO process management:
 
 ```bash
-# Using ao-forge commands
+# Start an AO process (automatically loads Lua files from ao.config.yml)
+ao-forge process start
+
+# Start with custom name
 ao-forge process start -n "my-process"
-ao-forge process stop
+
+# List running processes
 ao-forge process list
 
-# Or use AOS CLI directly
-npm i -g https://get_ao.g8way.io
-aos [process-name] --load ./ao/contract.lua
+# Stop a process
+ao-forge process stop
+
+# Start development server with AO integration
+ao-forge dev
 ```
+
+The `ao-forge process start` command automatically:
+- Detects Lua files in your project
+- Loads them into the AO process
+- Uses configuration from `ao.config.yml`
+- Switches to interactive AOS CLI for real-time development
 
 ## Contributing
 

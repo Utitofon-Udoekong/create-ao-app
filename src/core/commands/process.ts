@@ -4,6 +4,7 @@ import { ProcessManager } from '../managers/process-manager.js';
 import { ConfigManager } from '../managers/config-manager.js';
 import path from 'path';
 import fs from 'fs-extra';
+import { Command } from 'commander';
 
 export class ProcessCommand extends BaseCommand {
   name = 'process';
@@ -45,6 +46,51 @@ export class ProcessCommand extends BaseCommand {
       required: false
     }
   ];
+
+  register(program: Command): void {
+    const cmd = program.command(this.name).description(this.description);
+    
+    // Add subcommands
+    cmd.command('start')
+      .description('Start an AO process')
+      .option('-n, --name <name>', 'Process name')
+      .option('--wallet <path>', 'Path to wallet file')
+      .option('--data <data>', 'Process data')
+      .option('--module <module>', 'Process module')
+      .action(async (options: any) => {
+        try {
+          await this.execute({ start: true, ...options });
+        } catch (error) {
+          this.logError('Process command failed', error as Error);
+          process.exit(1);
+        }
+      });
+
+    cmd.command('stop')
+      .description('Stop a running AO process')
+      .action(async (options: any) => {
+        try {
+          await this.execute({ stop: true, ...options });
+        } catch (error) {
+          this.logError('Process command failed', error as Error);
+          process.exit(1);
+        }
+      });
+
+    cmd.command('list')
+      .description('List all processes')
+      .action(async (options: any) => {
+        try {
+          await this.execute({ list: true, ...options });
+        } catch (error) {
+          this.logError('Process command failed', error as Error);
+          process.exit(1);
+        }
+      });
+
+    // Add help text
+    this.addHelpText(cmd);
+  }
 
   async execute(options: any): Promise<void> {
     try {

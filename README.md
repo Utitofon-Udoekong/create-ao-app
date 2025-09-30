@@ -7,7 +7,7 @@ _Repo metadata_
 [![NPM License](https://img.shields.io/npm/l/ao-forge)](https://www.npmjs.com/package/ao-forge)
 [![protocol.land](https://arweave.net/eZp8gOeR8Yl_cyH9jJToaCrt2He1PHr0pR4o-mHbEcY)](https://protocol.land/#/repository/802dddb8-55e5-4189-a8c1-21033fc4660a)
 
-"🔥 AO-Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, React, Vue, Nuxt.js, and SvelteKit integration."
+🔥 AO-Forge: Your AI-powered CLI companion for building, managing, and deploying AO smart contracts with Next.js, React, Vue, Nuxt.js, and SvelteKit integration.
 
 ## Documentation
 

@@ -4,7 +4,7 @@ import { ProcessState } from './aos.js';
 export const AOConfigSchema = z.object({
   luaFiles: z.array(z.string()).default([]),
   packageManager: z.enum(['npm', 'yarn', 'pnpm']).default('pnpm'),
-  framework: z.enum(['nextjs', 'nuxtjs', 'svelte']).default('nextjs'),
+  framework: z.enum(['nextjs', 'nuxtjs', 'svelte', 'react', 'vue']).default('nextjs'),
   processName: z.string().default('ao-process'),
   ports: z.object({
     dev: z.number().default(3000),

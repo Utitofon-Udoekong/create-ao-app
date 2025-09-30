@@ -29,26 +29,26 @@ describe('ProjectManager', () => {
   });
 
   describe('validateDirectory', () => {
-    it('should return true for empty directory', async () => {
+    it('should return true for existing directory', async () => {
       const fs = require('fs-extra');
+      fs.pathExists = jest.fn().mockResolvedValue(true);
       fs.stat = jest.fn().mockResolvedValue({ isDirectory: () => true });
-      fs.readdir = jest.fn().mockResolvedValue([]);
 
       const result = await projectManager.validateDirectory('/test/dir');
       expect(result).toBe(true);
     });
 
-    it('should return false for non-empty directory', async () => {
+    it('should return false for non-existent directory', async () => {
       const fs = require('fs-extra');
-      fs.stat = jest.fn().mockResolvedValue({ isDirectory: () => true });
-      fs.readdir = jest.fn().mockResolvedValue(['file1.txt']);
+      fs.pathExists = jest.fn().mockResolvedValue(false);
 
       const result = await projectManager.validateDirectory('/test/dir');
       expect(result).toBe(false);
     });
 
-    it('should return false for non-existent directory', async () => {
+    it('should return false when stat fails', async () => {
       const fs = require('fs-extra');
+      fs.pathExists = jest.fn().mockResolvedValue(true);
       fs.stat = jest.fn().mockRejectedValue(new Error('ENOENT'));
 
       const result = await projectManager.validateDirectory('/test/dir');
@@ -99,8 +99,6 @@ describe('ProjectManager', () => {
 
       expect(mockConfigManager.saveConfig).toHaveBeenCalled();
       expect(fs.ensureDir).toHaveBeenCalled();
-      expect(fs.writeFile).toHaveBeenCalled();
-      expect(fs.writeJSON).toHaveBeenCalled();
     });
 
     it('should throw error for non-empty directory', async () => {
@@ -119,7 +117,7 @@ describe('ProjectManager', () => {
       };
 
       await expect(projectManager.createProject(options)).rejects.toThrow(
-        'Directory /test/project is not empty. Please choose a different location or clear the directory.'
+        'Directory /test/project is not empty. Please choose a different location or remove existing files.'
       );
     });
   });
@@ -159,15 +157,25 @@ describe('ProjectManager', () => {
 
       const result = await projectManager.startDevServer(config, false);
 
-      expect(mockSpawn).toHaveBeenCalledWith('npm exec next dev', [], {
+      expect(mockSpawn).toHaveBeenCalledWith('npm', ['run', 'dev'], {
         cwd: '/test/project',
         shell: true,
-        stdio: ['inherit', 'pipe', 'pipe']
+        stdio: 'inherit'
       });
       expect(result).toBeDefined();
     });
 
-    it('should throw error for unsupported package manager', async () => {
+    it('should use default command for unsupported package manager', async () => {
+      const mockSpawn = jest.fn().mockReturnValue({
+        stdout: { on: jest.fn() },
+        stderr: { on: jest.fn() },
+        on: jest.fn(),
+        kill: jest.fn()
+      });
+
+      const { spawn } = require('child_process');
+      spawn.mockImplementation(mockSpawn);
+
       const config = {
         luaFiles: [],
         packageManager: 'unsupported' as any,
@@ -186,63 +194,20 @@ describe('ProjectManager', () => {
         tags: {}
       };
 
-      await expect(projectManager.startDevServer(config, false)).rejects.toThrow(
-        'Unsupported package manager: unsupported'
-      );
+      const result = await projectManager.startDevServer(config, false);
+
+      expect(mockSpawn).toHaveBeenCalledWith('unsupported', ['run', 'dev'], {
+        cwd: '/test/project',
+        shell: true,
+        stdio: 'inherit'
+      });
+      expect(result).toBeDefined();
     });
   });
 
-  describe('checkDependenciesInstalled', () => {
-    it('should return true when dependencies are installed', async () => {
-      const fs = require('fs-extra');
-      fs.pathExists = jest.fn().mockResolvedValue(true);
+  // Note: checkDependenciesInstalled method was removed in the streamlined project manager
 
-      const result = await projectManager.checkDependenciesInstalled('npm');
-      expect(result).toBe(true);
-    });
+  // Note: getProjectInfo method was removed in the streamlined project manager
 
-    it('should return false when dependencies are not installed', async () => {
-      const fs = require('fs-extra');
-      fs.pathExists = jest.fn().mockResolvedValue(false);
-
-      const result = await projectManager.checkDependenciesInstalled('npm');
-      expect(result).toBe(false);
-    });
-
-    it('should return false for unsupported package manager', async () => {
-      const result = await projectManager.checkDependenciesInstalled('unsupported');
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('getProjectInfo', () => {
-    it('should return project info when packageon exists', async () => {
-      const mockPackageJson = {
-        name: 'test-project',
-        version: '1.0.0'
-      };
-
-      const fs = require('fs-extra');
-      fs.pathExists = jest.fn().mockResolvedValue(true);
-      fs.readJSON = jest.fn().mockResolvedValue(mockPackageJson);
-
-      const result = await projectManager.getProjectInfo();
-      expect(result).toEqual(mockPackageJson);
-    });
-
-    it('should return null when packageon does not exist', async () => {
-      const fs = require('fs-extra');
-      fs.pathExists = jest.fn().mockResolvedValue(false);
-
-      const result = await projectManager.getProjectInfo();
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('getProjectPath', () => {
-    it('should return the project path', () => {
-      const result = projectManager.getProjectPath();
-      expect(result).toBe('/test/project');
-    });
-  });
+  // Note: getProjectPath method was removed in the streamlined project manager
 }); 

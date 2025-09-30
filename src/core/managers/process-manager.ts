@@ -314,7 +314,7 @@ export class ProcessManager {
       // Start the process
       this.process = spawn('aos', args, {
         cwd: projectPath,
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: 'inherit'
       });
 
       // Handle spawn errors (like ENOENT when aos is not found)

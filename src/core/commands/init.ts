@@ -107,7 +107,9 @@ export class InitCommand extends BaseCommand {
         choices: [
           { name: 'Next.js (React)', value: 'nextjs' },
           { name: 'Nuxt.js (Vue)', value: 'nuxtjs' },
-          { name: 'SvelteKit (Svelte)', value: 'svelte' }
+          { name: 'SvelteKit (Svelte)', value: 'svelte' },
+          { name: 'React (Vite)', value: 'react' },
+          { name: 'Vue (Vite)', value: 'vue' }
         ],
         default: 'nextjs'
       });
@@ -239,7 +241,7 @@ export class InitCommand extends BaseCommand {
       throw new Error('Project name is required');
     }
 
-    const validFrameworks = ['nextjs', 'nuxtjs', 'svelte'];
+    const validFrameworks = ['nextjs', 'nuxtjs', 'svelte', 'react', 'vue'];
     if (!validFrameworks.includes(options.framework)) {
       throw new Error(`Invalid framework. Must be one of: ${validFrameworks.join(', ')}`);
     }
@@ -285,6 +287,8 @@ Frameworks:
   nextjs    - Next.js (React)
   nuxtjs    - Nuxt.js (Vue)
   svelte    - SvelteKit (Svelte)
+  react     - React (Vite)
+  vue       - Vue (Vite)
 
 Package Managers:
   npm       - Node Package Manager

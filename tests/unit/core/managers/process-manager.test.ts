@@ -73,7 +73,7 @@ describe('ProcessManager', () => {
       
       expect(mockSpawn).toHaveBeenCalledWith('aos', expect.arrayContaining(['test-process']), {
         cwd: '/test/path',
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: 'inherit'
       });
       expect(result).toBeDefined();
     });

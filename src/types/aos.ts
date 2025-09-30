@@ -69,7 +69,7 @@ export interface SchedulerConfig {
 export interface AOConfig {
   luaFiles: string[];
   packageManager: 'npm' | 'yarn' | 'pnpm';
-  framework: 'nextjs' | 'nuxtjs' | 'svelte';
+  framework: 'nextjs' | 'nuxtjs' | 'svelte' | 'react' | 'vue';
   processName: string;
   ports: {
     dev: number;
@@ -89,13 +89,12 @@ export interface AOConfig {
 
 export interface CreateProjectOptions {
   name: string;
-  framework: 'nextjs' | 'nuxtjs' | 'svelte';
+  framework: 'nextjs' | 'nuxtjs' | 'svelte' | 'react' | 'vue';
   packageManager: 'npm' | 'yarn' | 'pnpm';
   port?: number;
   processName?: string;
   runWithAO?: boolean;
   initializeGit?: boolean;
-
 }
 
 export interface ProcessInfo {

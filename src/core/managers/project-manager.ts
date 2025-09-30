@@ -275,6 +275,6 @@ export class ProjectManager {
     logger.info('\n🚀 Next steps:');
     logger.info('1. cd ' + path.basename(this.projectPath));
     logger.info(`2. ${options.packageManager || 'pnpm'} dev`);
-    logger.info('\n📚 Documentation: https://docs.ao.forge');
+    logger.info('\n📚 Documentation: https://aoforge.vercel.app/');
   }
 }
